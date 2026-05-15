@@ -1,0 +1,15 @@
+services:
+  dokploy:
+    image: dokploy/dokploy:latest
+    # We remove the public ports 3000:3000 to hide it
+    network_mode: "service:tailscale" 
+
+  tailscale:
+    image: tailscale/tailscale:latest
+    hostname: dokploy-home-lab
+    environment:
+      - TS_AUTHKEY=tskey-auth-yourkeyhere
+      - TS_STATE_DIR=/var/lib/tailscale
+    volumes:
+      - ./ts_state:/var/lib/tailscale
+    restart: always

@@ -1,0 +1,10 @@
+# Standard Docker Compose in Dokploy
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  app:
+    build: .
+    environment:
+      - DATABASE_URL=postgres://user:pass@db:5432/app

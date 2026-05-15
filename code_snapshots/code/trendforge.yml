@@ -1,0 +1,41 @@
+http:
+  routers:
+    # Router for the main web app (everything except /reverb)
+    trendforge-web-router:
+      rule: "Host(`trendforge.huement.com`) && !PathPrefix(`/reverb`)"
+      service: trendforge-web-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt   # or your custom cert resolver
+
+    # Router for Reverb WebSocket server (only paths starting with /reverb)
+    trendforge-reverb-router:
+      rule: "Host(`trendforge.huement.com`) && PathPrefix(`/reverb`)"
+      service: trendforge-reverb-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      # Optional: Add priority if needed (higher number = higher priority)
+      # priority: 100
+
+  services:
+      # Service pointing to FrankenPHP (main web server)
+      trendforge-web-service:
+        loadBalancer:
+          servers:
+            - url: "http://<container-ip-or-name>:80"   # Internal container port for web
+
+      # Service pointing to Reverb (WebSocket server)
+      trendforge-reverb-service:
+        loadBalancer:
+          servers:
+            - url: "http://<container-ip-or-name>:8080"  # Internal container port for Reverb
+
+  # Optional: Add middlewares if you need to strip prefixes or add headers
+  middlewares:
+    reverb-stripprefix:
+      stripPrefix:
+        prefixes:
+          - "/reverb"
