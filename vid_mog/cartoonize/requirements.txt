@@ -1,8 +1,0 @@
-# Use the current stable version
-tensorflow==2.16.2
-tf_slim==1.1.0
-# The rest remain the same
-opencv-python
-scikit-video==1.1.11
-PyYAML>=6.0
-Pillow>=10.0.0
