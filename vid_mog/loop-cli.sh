@@ -31,20 +31,22 @@ Required Arguments:
   -i, --input <path>      Path to the input video file.
 
 Loop Configuration:
-  -m, --mode <type>       Type of loop to generate: 'repeat' or 'boomerang'.
-                          (Default: repeat)
-  -c, --count <int>       Number of times to play back the clip. 
-                          Only applies to 'repeat' mode. (Default: 3)
+  -m, --mode <type>        Type of loop to generate: 'repeat' or 'boomerang'.
+                           (Default: repeat)
+  -c, --count <int>        Number of times to play back the clip. 
+                           Only applies to 'repeat' mode. (Default: 3)
+  -f, --fade <float>       Fade blend duration in seconds for seamless looping.
+                           (Default: 1.0)
 
 Output Adjustments:
-  -d, --outdir <path>     Manually set a target directory for the output video.
-                          (If omitted, defaults to the input file's directory)
+  -d, --outdir <path>      Manually set a target directory for the output video.
+                           (If omitted, defaults to the input file's directory)
 
 Hardware Acceleration:
-  --gpu                   Enable GPU NVENC hardware acceleration.
+  --gpu                    Enable GPU NVENC hardware acceleration.
 
 System Options:
-  -h, --help              Display this help menu.
+  -h, --help               Display this help menu.
 ==================================================
 EOF
 }
@@ -56,6 +58,7 @@ INPUT=""
 OUT_DIR=""
 MODE="repeat"
 COUNT="3"
+FADE="1.0"
 GPU="false"
 
 while [[ $# -gt 0 ]]; do
@@ -74,6 +77,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -c|--count)
       COUNT="$2"
+      shift 2
+      ;;
+    -f|--fade)
+      FADE="$2"
       shift 2
       ;;
     --gpu)
@@ -107,14 +114,11 @@ fi
 # --------------------------------------------------------
 # 4. PATH ROUTING LOGIC & FILENAME MANIPULATION
 # --------------------------------------------------------
-# Extract base elements cleanly
 FILENAME=$(basename -- "$INPUT")
 EXT="${FILENAME##*.}"
 NAME="${FILENAME%.*}"
 
-# Determine target directory and enforce "_looped" suffix rule
 if [[ -n "$OUT_DIR" ]]; then
-    # Ensure target directory exists before running
     mkdir -p "$OUT_DIR"
     OUTPUT_PATH="${OUT_DIR}/${NAME}_looped.${EXT}"
 else
@@ -131,17 +135,16 @@ CMD_ARGS=(
     "--output" "$OUTPUT_PATH"
     "--mode" "$MODE"
     "--count" "$COUNT"
+    "--fade" "$FADE"
 )
 
-# Conditionally append GPU flag toggle if requested
 if [[ "$GPU" == "true" ]]; then
     CMD_ARGS+=("--gpu")
 fi
 
 echo "🔁 Initializing Video Looper Processing..."
-echo "⚙️ Tuning Parameters: Mode=$MODE | Count=$COUNT | Target=$OUTPUT_PATH"
+echo "⚙️ Tuning Parameters: Mode=$MODE | Count=$COUNT | Fade=${FADE}s | Target=$OUTPUT_PATH"
 
-# Run the python execution via the localized environment binary
 "$PYTHON_BIN" "${CMD_ARGS[@]}"
 
 if [ $? -eq 0 ]; then

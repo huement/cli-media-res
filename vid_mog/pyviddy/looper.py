@@ -1,84 +1,95 @@
-import os
+#!/usr/bin/env python3
 import argparse
 import subprocess
+import json
 import sys
+import os
 
-def detect_best_gpu_encoder():
-    """Interrogates FFmpeg directly to see which hardware encoders are compiled and available."""
+def get_video_duration(input_file):
+    """Query file metadata to discover exact timeline duration properties."""
+    cmd = [
+        'ffprobe', '-v', 'error', 
+        '-show_entries', 'format=duration', 
+        '-of', 'json', input_file
+    ]
     try:
-        # Run 'ffmpeg -encoders' and capture the text output
-        result = subprocess.run(['ffmpeg', '-encoders'], capture_output=True, text=True, check=True)
-        
-        if 'h264_videotoolbox' in result.stdout:
-            return 'h264_videotoolbox'
-        if 'h264_nvenc' in result.stdout:
-            return 'h264_nvenc'
-        if 'h264_amf' in result.stdout:
-            return 'h264_amf'
-        if 'h264_vaapi' in result.stdout:
-            return 'h264_vaapi'
-    except Exception:
-        # If the ffmpeg command fails for any reason, fall back to basic OS guessing
-        pass
-    
-    # Emergency fallback strategy
-    return 'h264_videotoolbox' if sys.platform == 'darwin' else 'h264_nvenc'
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+        data = json.loads(result.stdout)
+        return float(data['format']['duration'])
+    except (subprocess.CalledProcessError, KeyError, ValueError) as e:
+        print(f"❌ Core Error: Failed to extract video properties via ffprobe: {e}", file=sys.stderr)
+        sys.exit(1)
 
-def loop_video(args):
-    # Smart Naming Logic
-    if args.output is None:
-        base_dir = os.path.dirname(args.input)
-        filename = os.path.basename(args.input)
-        name, ext = os.path.splitext(filename)
-        
-        if args.mode == 'boomerang':
-            suffix = "_boomerang"
-        else:
-            suffix = f"_loop_x{args.count}"
-            
-        args.output = os.path.join(base_dir, f"{name}{suffix}{ext}")
+def main():
+    parser = argparse.ArgumentParser(description="Cyberpunk Video Looper Engine Backend")
+    parser.add_argument('--input', required=True)
+    parser.add_argument('--output', required=True)
+    parser.add_argument('--mode', default='repeat', choices=['repeat', 'boomerang'])
+    parser.add_argument('--count', type=int, default=3)
+    parser.add_argument('--fade', type=float, default=1.0)
+    parser.add_argument('--gpu', action='store_true')
+    args = parser.parse_args()
 
-    # Resolve encoder choice dynamically
-    if args.gpu:
-        chosen_encoder = detect_best_gpu_encoder()
-        print(f"🎮 Hardware Acceleration Active: Automatically selected '{chosen_encoder}'")
-    else:
-        chosen_encoder = 'libx264'
+    if not os.path.exists(args.input):
+        print(f"❌ Error: Input file path does not exist: {args.input}", file=sys.stderr)
+        sys.exit(1)
 
-    # Build the FFmpeg command
-    cmd = ['ffmpeg', '-y']
+    total_duration = get_video_duration(args.input)
+    fade_len = args.fade
+
+    if fade_len >= total_duration:
+        fade_len = total_duration / 4.0
+        print(f"⚠️ Warning: Fade window exceeded clip limits. Downscaled to: {fade_len}s")
+
+    # VideoToolbox handles both Apple Silicon and Intel AMD cards via macOS drivers!
+    vcodec = 'h264_videotoolbox' if args.gpu else 'libx264'
+
+    # Build the structural FFmpeg complex filter graph string
+    filter_graph = ""
 
     if args.mode == 'repeat':
-        cmd.extend(['-stream_loop', str(args.count - 1), '-i', args.input])
-        cmd.extend(['-c:v', chosen_encoder, '-b:v', '12M'])
-        cmd.extend(['-c:a', 'copy'])
+        tail_start = total_duration - fade_len
+        filter_graph += f"[0:v]trim=start={tail_start}:end={total_duration},setpts=PTS-STARTPTS[tail]; "
+        filter_graph += f"[0:v]trim=start=0:end={tail_start},setpts=PTS-STARTPTS[main]; "
+        filter_graph += f"[tail][main]xfade=transition=fade:duration={fade_len}:offset=0[base_loop]; "
+    else:
+        filter_graph += "[0:v]split=2[f1][f2]; [f2]reverse,setpts=PTS-STARTPTS[r1]; [f1][r1]concat=n=2:v=1:a=0[base_loop]; "
 
-    elif args.mode == 'boomerang':
-        cmd.extend(['-i', args.input])
+    if args.count > 1:
+        splits = "".join([f"[split_{i}]" for i in range(args.count)])
+        filter_graph += f"[base_loop]split={args.count}{splits}; "
         
-        # Filter complex for reversing and merging
-        filter_str = "[0:v]reverse[rev];[0:v][rev]concat=n=2:v=1[v]"
-        cmd.extend(['-filter_complex', filter_str, '-map', '[v]'])
-        cmd.extend(['-c:v', chosen_encoder])
-        cmd.extend(['-an']) 
+        inputs = "".join([f"[split_{i}]" for i in range(args.count)])
+        filter_graph += f"{inputs}concat=n={args.count}:v=1:a=0[final_out]"
+    else:
+        filter_graph += "[base_loop]null[final_out]"
 
-    # Shared output configuration
-    cmd.extend(['-pix_fmt', 'yuv420p', args.output])
+    ffmpeg_cmd = [
+        'ffmpeg', '-y', '-v', 'error', '-stats',
+        '-i', args.input,
+        '-filter_complex', filter_graph,
+        '-map', '[final_out]',
+        '-c:v', vcodec,
+        '-pix_fmt', 'yuv420p',
+    ]
 
-    print(f"🚀 Processing loop using mode: '{args.mode}'...")
+    # 🚨 AMD VIDEOTOOLBOX OPTIMIZATION: Forced bitrate controls prevent compression artifacts
+    if args.gpu:
+        ffmpeg_cmd += [
+            '-b:v', '8000k',       # Target bitrate (8 Mbps keeps 1080p/4K pristine)
+            '-maxrate', '12000k',   # Allows bitrate spikes for high-motion frames
+            '-bufsize', '8000k',
+            '-realtime', '1'       # Tells VideoToolbox to prioritize execution speed
+        ]
+
+    ffmpeg_cmd.append(args.output)
+
+    print(f"🧬 Blending video pixels via complex filter graph engine...")
     try:
-        subprocess.run(cmd, check=True, capture_output=True)
-        print(f"✨ Success: {args.output}")
+        subprocess.run(ffmpeg_cmd, check=True)
     except subprocess.CalledProcessError as e:
-        print(f"❌ FFmpeg Error:\n{e.stderr.decode()}")
+        print(f"❌ Processing Engine Crash: FFmpeg failed to compile loop layout: {e}", file=sys.stderr)
+        sys.exit(1)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="FFmpeg Video Looper Script")
-    parser.add_argument('--input', required=True, help="Path to the input video clip")
-    parser.add_argument('--output', required=False, default=None, help="Path to the output video")
-    parser.add_argument('--mode', choices=['repeat', 'boomerang'], default='repeat', help="Type of loop")
-    parser.add_argument('--count', type=int, default=3, help="Number of times to repeat")
-    parser.add_argument('--gpu', action='store_true', help="Use hardware acceleration for encoding")
-
-    args = parser.parse_args()
-    loop_video(args)
+    main()
