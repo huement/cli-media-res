@@ -30,7 +30,7 @@ KEYWORDS=(
 declare -A USAGE
 USAGE["--input"]="Input folder containing mp4 files or a path to a single mp4 file."
 USAGE["--output"]="Output folder for processed files."
-USAGE["--optimize"]="Enable smart optimization (denoise and auto-upscale low-res videos to 1080p)."
+USAGE["--optimize"]="Applies high-quality denoising and upscales if the source video is below the target size."
 USAGE["--downscale"]="Downscale video to target height proportion (e.g., 720p, 480) using libx264 CRF 24." # CHANGED: Updated description
 USAGE["--bloom"]="Enable bloom / glow effect."
 USAGE["--twinkle"]="Enable starfield twinkling effect."
@@ -103,16 +103,35 @@ fi | while IFS= read -r -d '' file; do
     A_ARGS=(-c:a copy)
     V_ARGS=(-c:v hevc_videotoolbox -b:v "$BITRATE" -tag:v hvc1)
 
-    # 1. SMART OPTIMIZATION (Denoise & Adaptive Upscale Layout)
-    if [[ "${KW_ARGS[--optimize]}" == "true" ]]; then
+    # 1. SMART OPTIMIZATION (Denoise & Dynamic Upscale Layout)
+    OPTIMIZE_TARGET="${KW_ARGS[--optimize]}"
+
+    if [[ -n "$OPTIMIZE_TARGET" && "$OPTIMIZE_TARGET" != "none" && "$OPTIMIZE_TARGET" != "false" ]]; then
+        # Always apply the high-quality denoise filter if optimization is active
         V_FILTERS="${V_FILTERS},hqdn3d=0.5:0.5:3:3"
-        if [ "$WIDTH" -lt 1920 ] && [ "$WIDTH" -gt 0 ]; then
-            echo "    -> Upscaling to 1080p..."
-            V_FILTERS="${V_FILTERS},scale=1920:1080:flags=lanczos,unsharp=3:3:0.5:3:3:0.5"
-            NAME_SUFFIX="${NAME_SUFFIX}-1080"
-        else
-            echo "    -> Skipping resize (1080p+ or undetected)."
-            NAME_SUFFIX="${NAME_SUFFIX}-orig"
+        
+        TARGET_W=0
+        TARGET_H=0
+
+        # Map the string selection to actual pixel dimensions
+        case "$OPTIMIZE_TARGET" in
+            720p)  TARGET_W=1280; TARGET_H=720 ;;
+            1080p) TARGET_W=1920; TARGET_H=1080 ;;
+            1440p) TARGET_W=2560; TARGET_H=1440 ;;
+            4k)    TARGET_W=3840; TARGET_H=2160 ;;
+            *)     echo "    -> Warning: Unknown resolution target '$OPTIMIZE_TARGET'. Skipping upscale." ;;
+        esac
+
+        # Execute adaptive upscale only if target dimensions were successfully mapped
+        if [ "$TARGET_W" -gt 0 ]; then
+            if [ "$WIDTH" -lt "$TARGET_W" ] && [ "$WIDTH" -gt 0 ]; then
+                echo "    -> Upscaling to $OPTIMIZE_TARGET..."
+                V_FILTERS="${V_FILTERS},scale=${TARGET_W}:${TARGET_H}:flags=lanczos,unsharp=3:3:0.5:3:3:0.5"
+                NAME_SUFFIX="${NAME_SUFFIX}-${OPTIMIZE_TARGET}"
+            else
+                echo "    -> Skipping upscale (Source video width ${WIDTH}px is already >= ${TARGET_W}px)."
+                NAME_SUFFIX="${NAME_SUFFIX}-orig"
+            fi
         fi
     fi
 

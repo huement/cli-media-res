@@ -1,210 +1,252 @@
 #!/usr/bin/env bash
 
-# --------------------------------------------------------
-# 1. ENVIRONMENT SETUP & LOCATION AWARENESS
-# --------------------------------------------------------
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PYTHON_BIN="${BASE_DIR}/pyviddy/venv/bin/python3"
-CARTOON_SCRIPT="${BASE_DIR}/pyviddy/cartoonize.py"
+# 1. Source the bash-args library
+source "$(dirname "$0")/../bash-args.sh"
 
 # --------------------------------------------------------
-# 2. HELP SCREEN INTERFACE
+# CONFIGURATION & CLI ARGUMENTS
 # --------------------------------------------------------
-show_help() {
-    cat << EOF
-🎨 Mega Cartoonization Toolkit (AI, FFmpeg, & Shaders)
-==================================================
-Usage: ./cartoon_cli.sh -i <input.mp4> -m <mode> [options]
+DESCRIPTION="Ultimate Video Toolkit: Combines smart optimization, motion interpolation, and creative FX filters."
 
-Required Arguments:
-  -i, --input <path>      Path to the input video file.
+KEYWORDS=(
+    "--input|-i;string"
+    "--output|-o;string"
+    "--optimize;bool"
+    "--downscale|-ds;string"
+    "--rotate;string"            # ADDED: Handle widescreen to vertical orientation
+    "--bloom;bool"
+    "--twinkle;bool"
+    "--aberration;bool"
+    "--crush;bool"
+    "--grain|-gr;bool"
+    "--glitch|-gl;bool"
+    "--slowsmooth;bool"
+    "--ghosting;bool"
+    "--lut|-l;string"
+    "--watermark|-wm;string"
+    "--wm-width|-ww;int"
+    "--bitrate|-b;string"
+)
 
-Engine Selection:
-  -m, --mode <engine>     Processing engine to use:
-                            'ai'      -> White-box Neural Network (Default)
-                            'recipe'  -> FFmpeg Bilateral + Canny Edge
-                            'frei0r'  -> Frei0r Cartoon Plugin
-                            'shader'  -> GPU GLSL Shader via MPV
+declare -A USAGE
+USAGE["--input"]="Input folder containing mp4 files or a path to a single mp4 file."
+USAGE["--output"]="Output folder for processed files."
+USAGE["--optimize"]="Enable smart optimization (denoise and auto-upscale low-res videos to 1080p)."
+USAGE["--downscale"]="Downscale video to target height proportion (e.g., 720p, 480) using hardware acceleration."
+USAGE["--rotate"]="Rotate video 90 degrees ('cw' for clockwise, 'ccw' for counter-clockwise)."
+USAGE["--bloom"]="Enable bloom / glow effect."
+USAGE["--twinkle"]="Enable starfield twinkling effect."
+USAGE["--aberration"]="Enable chromatic aberration effect."
+USAGE["--crush"]="Enable deep black shadow crush curves."
+USAGE["--grain"]="Enable film grain effect."
+USAGE["--glitch"]="Enable anaglyphic RGB shift glitch effect."
+USAGE["--slowsmooth"]="Enable ultra-smooth motion interpolation slow-mo (50% speed, 60fps)."
+USAGE["--ghosting"]="Enable dreamy frame-blending slow-mo (50% speed, 60fps)."
+USAGE["--lut"]="Path to the .cube LUT file."
+USAGE["--watermark"]="Path to the watermark image."
+USAGE["--wm-width"]="Width of the watermark (Default: 120)."
+USAGE["--bitrate"]="Video bitrate (Default: 2000k)."
 
-Optional Arguments:
-  -o, --output <path>     Explicit output file path. 
-                          (If omitted, auto-generates a smart path based on mode)
-  -s, --shader <path>     Path to .glsl shader file (Required if mode is 'shader')
+parse_args "$@" || exit $?
 
-AI Mode Tuning Options (Only applies to -m ai):
-  -r, --radius <int>      Filter radius [1-5]. (Default: 1)
-  -e, --eps <float>       Epsilon smoothing threshold. (Default: 5e-3)
-  --intensity <float>     Blending weight [0.0 to 1.0]. (Default: 1.0)
-  
-Style Preset Cheat Sheet:
-✨ Sharp Anime Stars:   -r 1 -e 1e-4
-🌸 Watercolor Nebula:   -r 4 -e 0.05
-🚀 Retro Sci-Fi Book:   -r 5 -e 0.3
-🎨 Gritty Comic Novel:  -r 1 -e 5e-3 --intensity 0.4
+if [[ "${KW_ARGS[--optimize]}" == "true" ]] && [[ -n "${KW_ARGS[--downscale]}" ]]; then
+    echo "❌ Error: You cannot use --optimize (upscale) and --downscale at the same time."
+    exit 1
+fi
 
-==================================================
-EOF
+# --------------------------------------------------------
+# HELPERS & INITIALIZATION
+# --------------------------------------------------------
+slugify() {
+    echo "$1" | iconv -t ascii//TRANSLIT | sed -E 's/[^a-zA-Z0-9]+/-/g' | sed -E 's/^-+|-+$//g' | tr '[:upper:]' '[:lower:]'
 }
 
-# --------------------------------------------------------
-# 3. ARGUMENT PARSING & DEFAULTS
-# --------------------------------------------------------
-INPUT=""
-OUTPUT=""
-MODE="ai"
-SHADER=""
-RADIUS="1"
-EPS="5e-3"
-INTENSITY="1.0"
+BITRATE="${KW_ARGS[--bitrate]:-2000k}"
+WM_WIDTH="${KW_ARGS[--wm-width]:-120}"
+INPUT_PATH="${KW_ARGS[--input]:-${ARGS[0]:-.}}"
 
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    -i|--input)
-      INPUT="$2"
-      shift 2
-      ;;
-    -o|--output)
-      OUTPUT="$2"
-      shift 2
-      ;;
-    -m|--mode)
-      MODE="$2"
-      shift 2
-      ;;
-    -s|--shader)
-      SHADER="$2"
-      shift 2
-      ;;
-    -r|--radius)
-      RADIUS="$2"
-      shift 2
-      ;;
-    -e|--eps)
-      EPS="$2"
-      shift 2
-      ;;
-    --intensity)
-      INTENSITY="$2"
-      shift 2
-      ;;
-    -h|--help)
-      show_help
-      exit 0
-      ;;
-    *)
-      echo "❌ Unknown option: $1"
-      echo "Run './cartoon_cli.sh --help' to see valid arguments."
-      exit 1
-      ;;
-  esac
-done
+# Detect Mac Hardware Architecture Once Globally
+MAC_ARCH=$(uname -m)
 
-# Basic Validation
-if [[ -z "$INPUT" ]]; then
-    echo "❌ Error: No input file specified."
+# Robust check for input types (accepts file OR directory)
+if [ ! -d "$INPUT_PATH" ] && [ ! -f "$INPUT_PATH" ]; then
+    echo "❌ Error: Input file or directory not found: $INPUT_PATH"
     exit 1
 fi
 
-if [[ ! -f "$INPUT" ]]; then
-    echo "❌ Error: Input file does not exist: $INPUT"
-    exit 1
-fi
-
-# Smart Auto-Naming for FFmpeg/MPV modes if output is omitted
-if [[ -z "$OUTPUT" ]]; then
-    filename=$(basename -- "$INPUT")
-    extension="${filename##*.}"
-    filename="${filename%.*}"
-    OUTPUT="${filename}_${MODE}.${extension}"
-fi
-
-# --------------------------------------------------------
-# 4. EXECUTION ROUTER
-# --------------------------------------------------------
-case $MODE in
-
-  ai)
-    if [ ! -f "$PYTHON_BIN" ]; then
-        echo "❌ Error: Python virtual environment not found at: $PYTHON_BIN"
-        exit 1
-    fi
-    
-    CMD_ARGS=(
-        "$CARTOON_SCRIPT"
-        "--input" "$INPUT"
-        "--radius" "$RADIUS"
-        "--eps" "$EPS"
-        "--intensity" "$INTENSITY"
-    )
-    # If the user explicitly defined an output, pass it to Python. 
-    # Otherwise, clear OUTPUT so your Python script auto-generates its smart name.
-    if [[ "$OUTPUT" != *_${MODE}.* ]]; then
-        CMD_ARGS+=("--output" "$OUTPUT")
-    fi
-
-    echo "🎨 Engine: Neural Networks (White-Box)..."
-    "$PYTHON_BIN" "${CMD_ARGS[@]}"
-    ;;
-	
-  recipe)
-    echo "🧪 Engine: FFmpeg Fixed Recipe (RGB-Isolated Bilateral + Posterise + Edge Detect)..."
-    ffmpeg -i "$INPUT" -filter_complex \
-    "[0:v]bilateral=sigmaS=10:sigmaR=0.2,eq=saturation=1.5,lutrgb=r='val-mod(val,64)':g='val-mod(val,64)':b='val-mod(val,64)',format=rgb24[flat]; \
-     [0:v]edgedetect=low=0.06:high=0.12,negate,format=rgb24[lines]; \
-     [flat][lines]blend=all_mode=multiply,format=rgb24[blended]; \
-     [blended]format=yuv420p[out]" \
-    -map "[out]" -c:a copy -y "$OUTPUT"
-    ;;
-
-  frei0r)
-    echo "🔌 Engine: FFmpeg Frei0r Plugin..."
-    # Verify plugin presence first
-    if ! ffmpeg -filters 2>&1 | grep -q frei0r; then
-        echo "❌ Error: Your FFmpeg build does not support Frei0r filters."
-        exit 1
-    fi
-	
-	# Mandate the path directly inside the script execution environment
-    if [ -d "/usr/local/lib/frei0r-1" ]; then
-        export FREI0R_PATH="/usr/local/lib/frei0r-1"
-    elif [ -d "/opt/homebrew/lib/frei0r-1" ]; then
-        export FREI0R_PATH="/opt/homebrew/lib/frei0r-1"
-    fi
-	
-    ffmpeg -i "$INPUT" -vf "frei0r=filter_name=cartoon" -c:a copy -y "$OUTPUT"
-    ;;
-
-  shader)
-    echo "🎮 Engine: GPU GLSL Shader Pipeline..."
-    if [[ -z "$SHADER" ]]; then
-        echo "❌ Error: Mode 'shader' requires a shader path via -s or --shader"
-        exit 1
-    fi
-    if [ ! -f "$SHADER" ]; then
-        echo "❌ Error: Shader file not found at: $SHADER"
-        exit 1
-    fi
-    if ! command -v mpv &> /dev/null; then
-        echo "❌ Error: 'mpv' media player is required to render GLSL shaders."
-        echo "Install it via Homebrew: brew install mpv"
-        exit 1
-    fi
-    
-    mpv "$INPUT" --glsl-shaders="$SHADER" -o "$OUTPUT"
-    ;;
-
-  *)
-    echo "❌ Error: Invalid mode '$MODE'. Choose from: ai, recipe, frei0r, shader."
-    exit 1
-    ;;
-esac
-
-# --------------------------------------------------------
-# 5. POST-FLIGHT CHECK
-# --------------------------------------------------------
-if [ $? -eq 0 ]; then
-    echo "🚀 Stream complete! Output saved to: $OUTPUT"
+# Dynamic output directory target mapping
+if [ -d "$INPUT_PATH" ]; then
+    OUTPUT_DIR="${KW_ARGS[--output]:-$INPUT_PATH}"
 else
-    echo "❌ Processing failed. Check your configuration or parameters."
-    exit 1
+    OUTPUT_DIR="${KW_ARGS[--output]:-$(dirname "$INPUT_PATH")}"
 fi
+mkdir -p "$OUTPUT_DIR"
+
+# --------------------------------------------------------
+# PROCESSING LOOP
+# --------------------------------------------------------
+if [ -f "$INPUT_PATH" ]; then
+    printf "%s\0" "$INPUT_PATH"
+else
+    find "$INPUT_PATH" -maxdepth 1 -name "*.mp4" -print0
+fi | while IFS= read -r -d '' file; do
+    
+    filename=$(basename "$file")
+    base_name="${filename%.*}"
+    
+    # Extract resolution width securely
+    WIDTH=$(ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=noprint_wrappers=1:nokey=1 "$file" < /dev/null)
+    [[ -z "$WIDTH" ]] && WIDTH=0
+
+    echo "🎬 Analyzing: $filename (${WIDTH}px wide)"
+
+    # Initialize empty layout filters per loop iteration
+    V_FILTERS="" 
+    NAME_SUFFIX=""
+    A_ARGS=(-c:a copy)
+
+    # Helper function to append filters sequentially using correct syntax rules
+    append_filter() {
+        if [[ -z "$V_FILTERS" ]]; then
+            V_FILTERS="$1"
+        else
+            V_FILTERS="${V_FILTERS},$1"
+        fi
+    }
+
+    # 1. SMART OPTIMIZATION (Denoise & Adaptive Upscale Layout)
+    if [[ "${KW_ARGS[--optimize]}" == "true" ]]; then
+        append_filter "hqdn3d=0.5:0.5:3:3"
+        if [ "$WIDTH" -lt 1920 ] && [ "$WIDTH" -gt 0 ]; then
+            echo "    -> Upscaling to 1080p..."
+            append_filter "scale=1920:1080:flags=lanczos"
+            append_filter "unsharp=3:3:0.5:3:3:0.5"
+            NAME_SUFFIX="${NAME_SUFFIX}-1080"
+        else
+            echo "    -> Skipping resize (1080p+ or undetected)."
+            NAME_SUFFIX="${NAME_SUFFIX}-orig"
+        fi
+    fi
+
+    # 1b. DOWNSCALING PIPELINE
+    if [[ -n "${KW_ARGS[--downscale]}" ]]; then
+        # Sanitize input: extracts only numbers (e.g., '720p' or '720' both become '720')
+        DS_SIZE=$(echo "${KW_ARGS[--downscale]}" | sed 's/[^0-9]//g')
+    
+        # Emergency fallback to 480 if the string argument didn't contain a valid number
+        [[ -z "$DS_SIZE" ]] && DS_SIZE=480
+
+        echo "    -> Downscaling to ${DS_SIZE}p..."
+        append_filter "scale=-2:${DS_SIZE}"
+        NAME_SUFFIX="${NAME_SUFFIX}-${DS_SIZE}"
+    fi
+
+    # 1c. ROTATION / FLIPPING PIPELINE (Widescreen to Vertical)
+    if [[ -n "${KW_ARGS[--rotate]}" ]]; then
+        if [[ "${KW_ARGS[--rotate]}" == "cw" ]]; then
+            echo "    -> Rotating 90° Clockwise..."
+            append_filter "transpose=1"
+            NAME_SUFFIX="${NAME_SUFFIX}-rot90cw"
+        elif [[ "${KW_ARGS[--rotate]}" == "ccw" ]]; then
+            echo "    -> Rotating 90° Counter-Clockwise..."
+            append_filter "transpose=2"
+            NAME_SUFFIX="${NAME_SUFFIX}-rot90ccw"
+        else
+            echo "    ⚠️ Warning: Unsupported rotation '${KW_ARGS[--rotate]}'. Use 'cw' or 'ccw'."
+        fi
+    fi
+
+    # 2. MOTION INTERPOLATION / SLOW MOTION
+    if [[ "${KW_ARGS[--slowsmooth]}" == "true" ]]; then
+        echo "    -> Applying Ultra-Smooth Motion Interpolation (50% Speed)..."
+        append_filter "setpts=2*PTS"
+        append_filter "minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:vsbmc=1"
+        A_ARGS=(-c:a aac -af "atempo=0.5")
+        NAME_SUFFIX="${NAME_SUFFIX}-slowsmooth"
+    elif [[ "${KW_ARGS[--ghosting]}" == "true" ]]; then
+        echo "    -> Applying Dreamy Frame Blending / Light Trails (50% Speed)..."
+        append_filter "setpts=2*PTS"
+        append_filter "minterpolate=fps=60:mi_mode=blend"
+        A_ARGS=(-c:a aac -af "atempo=0.5")
+        NAME_SUFFIX="${NAME_SUFFIX}-ghosting"
+    fi
+
+    # 3. CREATIVE FX PIPELINE
+    if [[ "${KW_ARGS[--bloom]}" == "true" ]]; then
+        append_filter "split[a][b];[b]gblur=sigma=10[b];[a][b]blend=all_mode=addition:all_opacity=0.7"
+        NAME_SUFFIX="${NAME_SUFFIX}-bloom"
+    fi
+    if [[ "${KW_ARGS[--twinkle]}" == "true" ]]; then
+        append_filter "geq=lum='p(X,Y)*(1+0.15*sin(2*PI*T*1.5))'"
+        NAME_SUFFIX="${NAME_SUFFIX}-twinkle"
+    fi
+    if [[ "${KW_ARGS[--aberration]}" == "true" ]]; then
+        append_filter "chromashift=cbh=10:cbv=4:crh=-10:crv=-4"
+        NAME_SUFFIX="${NAME_SUFFIX}-distort"
+    fi
+    if [[ "${KW_ARGS[--crush]}" == "true" ]]; then
+        append_filter "curves=all='0/0 0.1/0 1/1'"
+        NAME_SUFFIX="${NAME_SUFFIX}-crush"
+    fi
+    if [[ "${KW_ARGS[--glitch]}" == "true" ]]; then
+        append_filter "rgbashift=rh=3:bh=-3"
+        NAME_SUFFIX="${NAME_SUFFIX}-glitch"
+    fi
+    if [[ "${KW_ARGS[--grain]}" == "true" ]]; then
+        append_filter "noise=alls=8:allf=t"
+        NAME_SUFFIX="${NAME_SUFFIX}-grain"
+    fi
+
+    # 4. COLOR GRADING (LUT Processing)
+    if [[ -n "${KW_ARGS[--lut]}" && -f "${KW_ARGS[--lut]}" ]]; then
+        append_filter "lut3d=file='${KW_ARGS[--lut]}'"
+        NAME_SUFFIX="${NAME_SUFFIX}-lut"
+    fi
+	
+    # 4b. ENCODER ARGUMENTS & PIXEL FORMAT DETERMINATION
+    if [[ -n "${KW_ARGS[--lut]}" && -f "${KW_ARGS[--lut]}" && -z "${KW_ARGS[--downscale]}" ]]; then
+        echo "    -> 💎 Professional 10-bit color workflow activated for LUT processing."
+        PIX_FMT="p010le"
+        V_ARGS=(-c:v hevc_videotoolbox -profile:v main10 -pix_fmt p010le -b:v "$BITRATE" -tag:v hvc1)
+    else
+        PIX_FMT="yuv420p"
+        if [[ "$MAC_ARCH" == "arm64" ]]; then
+            # Apple Silicon scales HEVC natively via hardware flawlessly.
+            V_ARGS=(-c:v hevc_videotoolbox -b:v "$BITRATE" -pix_fmt yuv420p -tag:v hvc1)
+        else
+            # Intel VideoToolbox is flaky with custom HEVC bitrates. H.264 guarantees stability.
+            echo "       🚀 Optimization: Intel Mac detected. Using H.264 Hardware Engine for stability."
+            V_ARGS=(-c:v h264_videotoolbox -b:v "$BITRATE" -pix_fmt yuv420p)
+        fi
+    fi
+
+    # Finalize the filtergraph by enforcing our pixel target constraints
+    append_filter "format=pix_fmts=${PIX_FMT}"
+
+    # Fallback suffix adjustment to safeguard against source mutations
+    if [[ -z "$NAME_SUFFIX" ]]; then
+        NAME_SUFFIX="-processed"
+    fi
+
+    output_name="${OUTPUT_DIR}/$(slugify "$base_name")${NAME_SUFFIX}.mp4"
+
+    # 5. EXECUTE FFMPEG CODES
+    if [[ -n "${KW_ARGS[--watermark]}" && -f "${KW_ARGS[--watermark]}" ]]; then
+        ffmpeg -nostdin -y -i "$file" -i "${KW_ARGS[--watermark]}" \
+            -filter_complex "[1:v]scale=${WM_WIDTH}:-1[wm]; [0:v]${V_FILTERS}[base]; [base][wm]overlay=W-w-20:H-h-20" \
+            "${V_ARGS[@]}" "${A_ARGS[@]}" \
+            "$output_name"
+    else
+        ffmpeg -nostdin -y -i "$file" \
+            -filter_complex "${V_FILTERS}" \
+            "${V_ARGS[@]}" "${A_ARGS[@]}" \
+            "$output_name"
+    fi
+
+    if [ $? -eq 0 ]; then
+        echo "✅ Finished: $output_name"
+    else
+        echo "❌ Error: FFmpeg failed to process $filename"
+    fi
+    echo "-----------------------------------"
+done

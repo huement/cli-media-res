@@ -1,35 +1,37 @@
 id: "pyviddy_cartoonize"
-name: "AI Cartoonizer (TensorFlow)"
+name: "AI Cartoonizer & Media Suite"
 script_path: "./vid_mog/pyviddy/cartoonize.py"
-description: "White-box Cartoonization pipeline using Deep Learning and Guided Filters."
+description: "Multi-Engine Pipeline: Swaps between Neural Nets, FFmpeg recipes, and MPV Shaders."
 
 arguments:
-  # Core Path Configurations
   - flag: "--input"
     name: "Input Video Path"
     type: "file"
     required: true
-    placeholder: "/path/to/source_video.mp4"
+
+  - flag: "--mode"
+    name: "Processing Core Engine"
+    type: "choice"
+    choices: ["ai", "recipe", "frei0r", "shader"]
+    default: "ai"
 
   - flag: "--output"
     name: "Output Video Path"
     type: "text"
-    placeholder: "Omit to auto-generate structured filename in source folder"
+    placeholder: "Omit to auto-generate filename"
 
-  # Algorithmic Hyperparameters
+  - flag: "--shader"
+    name: "GLSL GPU Shader Source"
+    type: "file"
+    placeholder: "Required only if 'shader' engine is active"
+
+  # AI Engine Sub-tuning Flags
   - flag: "--radius"
-    name: "Guided Filter Radius"
+    name: "AI: Guided Filter Radius"
     type: "integer"
     default: "1"
 
   - flag: "--eps"
-    name: "Epsilon Smoothing Curve"
+    name: "AI: Epsilon Smoothing Curve"
     type: "text"
     default: "5e-3"
-    placeholder: "e.g., 5e-3 or 0.005"
-
-  - flag: "--intensity"
-    name: "Stylization Intensity"
-    type: "text"
-    default: "1.0"
-    placeholder: "Value from 0.0 to 1.0"

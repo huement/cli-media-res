@@ -108,23 +108,31 @@ class OrchestratorApp(App):
             tool = next(t for t in self.tools if t["id"] == tool_id)
             self.execute_tool(tool)
 
-    def resolve_execution_command(self, script_relative_path: str) -> list[str]:
+    def resolve_execution_command(self, tool_config: dict) -> list[str]:
         repo_root = Path(__file__).parent.parent
-        script_path = (repo_root / script_relative_path).resolve()
+        script_path = (repo_root / tool_config["script_path"]).resolve()
         
         if not script_path.exists():
             raise FileNotFoundError(f"Script not found at: {script_path}")
 
-        if script_path.suffix == ".sh":
-            return ["bash", str(script_path)]
-
         if script_path.suffix == ".py":
+            # Check if the YAML explicitly defined a venv path
+            if "venv_path" in tool_config:
+                explicit_venv = (repo_root / tool_config["venv_path"] / "bin" / "python").resolve()
+                if explicit_venv.exists():
+                    return [str(explicit_venv), str(script_path)]
+            
+            # Fallback to your automatic neighborhood lookups
             script_dir = script_path.parent
             for venv_name in (".venv", "venv"):
                 python_binary = script_dir / venv_name / "bin" / "python"
                 if python_binary.exists():
                     return [str(python_binary), str(script_path)]
+                    
             return [sys.executable, str(script_path)]
+
+        if script_path.suffix == ".sh":
+            return ["bash", str(script_path)]
 
         raise ValueError(f"Unsupported script type: {script_path.suffix}")
 
@@ -154,7 +162,8 @@ class OrchestratorApp(App):
                     cmd_args.append(arg['flag'])
 
         try:
-            base_cmd = self.resolve_execution_command(tool["script_path"])
+            # FIXED: Pass the entire tool dict here
+            base_cmd = self.resolve_execution_command(tool)
             full_cmd = base_cmd + cmd_args
             
             log_widget.write(f"[bold cyan]Running Pipeline:[/bold cyan] {shlex.join(full_cmd)}\n")
