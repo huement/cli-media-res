@@ -1,0 +1,90 @@
+id: "media_optimize"
+name: "Video Optimizer"
+script_path: "./vid_mog/media-optimize.sh"
+description: "Ultimate Video Toolkit: Combines smart optimization, motion interpolation, and creative FX filters."
+
+arguments:
+  # Paths & Core Settings
+  - flag: "--input"
+    name: "Input Path (-i)"
+    type: "file"
+    required: true
+    placeholder: "File path (.mp4) or directory containing videos"
+
+  - flag: "--output"
+    name: "Output Path (-o)"
+    type: "text"
+    placeholder: "Defaults to input file location or parent dir"
+
+  - flag: "--bitrate"
+    name: "Video Bitrate (-b)"
+    type: "text"
+    default: "15000k"
+
+  - flag: "--downscale"
+    name: "Downscale Height (-ds)"
+    type: "text"
+    placeholder: "e.g., 720p, 480 (Leave blank to keep source resolution)"
+
+  # Watermark Adjustments
+  - flag: "--watermark"
+    name: "Watermark Image Path (-wm)"
+    type: "file"
+    placeholder: "Path to PNG/JPG transparent watermark"
+
+  - flag: "--wm-width"
+    name: "Watermark Width (-ww)"
+    type: "integer"
+    default: "120"
+
+  # Core Processing Modifiers
+  - flag: "--optimize"
+    name: "Smart Optimization"
+    type: "boolean"
+    description: "Denoise and auto-upscale low-res videos to 1080p"
+
+  # Framerate & Motion Interpolation
+  - flag: "--slowsmooth"
+    name: "Ultra-Smooth Slow-Mo"
+    type: "boolean"
+    description: "Motion interpolation slow-mo (50% speed, 60fps)"
+
+  - flag: "--ghosting"
+    name: "Dreamy Frame Blending"
+    type: "boolean"
+    description: "Light trail slow-mo blending (50% speed, 60fps)"
+
+  # Color Grading
+  - flag: "--lut"
+    name: "3D LUT Curve (-l)"
+    type: "file"
+    placeholder: "Path to a .cube grading profile"
+
+  # Creative Special Effects (FX)
+  - flag: "--bloom"
+    name: "FX: Bloom & Glow"
+    type: "boolean"
+
+  - flag: "--twinkle"
+    name: "FX: Starfield Twinkle"
+    type: "boolean"
+
+  - flag: "--aberration"
+    name: "FX: Chromatic Aberration"
+    type: "boolean"
+
+  - flag: "--cartoon"
+    name: "FX: Cartoon Toon Shading"
+    type: "boolean"
+
+  - flag: "--crush"
+    name: "FX: Deep Black Shadow Crush"
+    type: "boolean"
+
+  - flag: "--glitch"
+    name: "FX: RGB Shift Glitch"
+    type: "boolean"
+
+  - flag: "--grain"
+    name: "FX: Cinematic Film Grain"
+    type: "boolean"

@@ -16,7 +16,6 @@ KEYWORDS=(
     "--bloom;bool"
     "--twinkle;bool"
     "--aberration;bool"
-    "--cartoon;bool"
     "--crush;bool"
     "--grain|-gr;bool"
     "--glitch|-gl;bool"
@@ -36,7 +35,6 @@ USAGE["--downscale"]="Downscale video to target height proportion (e.g., 720p, 4
 USAGE["--bloom"]="Enable bloom / glow effect."
 USAGE["--twinkle"]="Enable starfield twinkling effect."
 USAGE["--aberration"]="Enable chromatic aberration effect."
-USAGE["--cartoon"]="Enable cartoon toon shading effect."
 USAGE["--crush"]="Enable deep black shadow crush curves."
 USAGE["--grain"]="Enable film grain effect."
 USAGE["--glitch"]="Enable anaglyphic RGB shift glitch effect."
@@ -45,9 +43,14 @@ USAGE["--ghosting"]="Enable dreamy frame-blending slow-mo (50% speed, 60fps)."
 USAGE["--lut"]="Path to the .cube LUT file."
 USAGE["--watermark"]="Path to the watermark image."
 USAGE["--wm-width"]="Width of the watermark (Default: 120)."
-USAGE["--bitrate"]="Video bitrate (Default: 15000k)."
+USAGE["--bitrate"]="Video bitrate (Default: 2000k)."
 
 parse_args "$@" || exit $?
+
+if [[ "${KW_ARGS[--optimize]}" == "true" ]] && [[ -n "${KW_ARGS[--downscale]}" ]]; then
+    echo "❌ Error: You cannot use --optimize (upscale) and --downscale at the same time."
+    exit 1
+fi
 
 # --------------------------------------------------------
 # HELPERS & INITIALIZATION
@@ -56,7 +59,7 @@ slugify() {
     echo "$1" | iconv -t ascii//TRANSLIT | sed -E 's/[^a-zA-Z0-9]+/-/g' | sed -E 's/^-+|-+$//g' | tr '[:upper:]' '[:lower:]'
 }
 
-BITRATE="${KW_ARGS[--bitrate]:-15000k}"
+BITRATE="${KW_ARGS[--bitrate]:-2000k}"
 WM_WIDTH="${KW_ARGS[--wm-width]:-120}"
 INPUT_PATH="${KW_ARGS[--input]:-${ARGS[0]:-.}}"
 
@@ -113,17 +116,31 @@ fi | while IFS= read -r -d '' file; do
         fi
     fi
 
-    # 1b. DOWNSCALING PIPELINE (CHANGED SECTION)
+	# 1b. DOWNSCALING PIPELINE (SMART AUTO-DETECTION)
     if [[ -n "${KW_ARGS[--downscale]}" ]]; then
         # Sanitize input: extracts only numbers (e.g., '720p' or '720' both become '720')
         DS_SIZE=$(echo "${KW_ARGS[--downscale]}" | sed 's/[^0-9]//g')
-        
+    
         # Emergency fallback to 480 if the string argument didn't contain a valid number
         [[ -z "$DS_SIZE" ]] && DS_SIZE=480
 
         echo "    -> Downscaling to ${DS_SIZE}p..."
         V_FILTERS="${V_FILTERS},scale=-2:${DS_SIZE}"
-        V_ARGS=(-c:v libx264 -crf 24)
+    
+        # Detect Mac Hardware Architecture
+        MAC_ARCH=$(uname -m)
+
+        if [[ "$MAC_ARCH" == "arm64" ]]; then
+            echo "       💎 Optimization: Apple Silicon (M-Series) detected. Using HEVC Hardware Engine."
+            # Apple Silicon handles HEVC natively at a hardware level flawlessly.
+            V_ARGS=(-c:v hevc_videotoolbox -b:v "$BITRATE" -pix_fmt yuv420p -tag:v hvc1)
+        else
+            echo "       🚀 Optimization: Intel Mac detected. Swapping to H.264 Hardware Engine for stability."
+            # Intel VideoToolbox can be incredibly flaky with custom HEVC bitrates. 
+            # Swapping to H.264 hardware acceleration guarantees speed without the black screen bug.
+            V_ARGS=(-c:v h264_videotoolbox -b:v "$BITRATE" -pix_fmt yuv420p)
+        fi
+
         NAME_SUFFIX="${NAME_SUFFIX}-${DS_SIZE}"
     fi
 
@@ -152,10 +169,6 @@ fi | while IFS= read -r -d '' file; do
     if [[ "${KW_ARGS[--aberration]}" == "true" ]]; then
         V_FILTERS="${V_FILTERS},chromashift=cbh=10:cbv=4:crh=-10:crv=-4"
         NAME_SUFFIX="${NAME_SUFFIX}-distort"
-    fi
-    if [[ "${KW_ARGS[--cartoon]}" == "true" ]]; then
-        V_FILTERS="${V_FILTERS},edgedetect=low=0.1:high=0.4,negate"
-        NAME_SUFFIX="${NAME_SUFFIX}-toon"
     fi
     if [[ "${KW_ARGS[--crush]}" == "true" ]]; then
         V_FILTERS="${V_FILTERS},curves=all='0/0 0.1/0 1/1'"
@@ -204,6 +217,10 @@ fi | while IFS= read -r -d '' file; do
             "$output_name"
     fi
 
-    echo "✅ Finished: $output_name"
+	if [ $? -eq 0 ]; then
+        echo "✅ Finished: $output_name"
+    else
+        echo "❌ Error: FFmpeg failed to process $filename"
+    fi
     echo "-----------------------------------"
 done

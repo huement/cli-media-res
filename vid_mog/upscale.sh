@@ -1,0 +1,1 @@
+ffmpeg -i /Users/eris/Movies/Gems_Short/IntroVideo.mp4 -vf "scale=1080:1920:flags=lanczos,unsharp=3:3:0.5:3:3:0.5" -c:v hevc_videotoolbox -b:v 15000k -tag:v hvc1 -c:a copy /Users/eris/Movies/Gems_Short/IntroVideoScaled1080.mp4

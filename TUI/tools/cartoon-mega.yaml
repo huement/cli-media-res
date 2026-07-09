@@ -1,0 +1,42 @@
+id: "cartoon_mega_toolkit"
+name: "Mega Cartoonization Suite"
+script_path: "./vid_mog/cartoon-cli.sh"
+description: "Multi-Engine Pipeline: Swaps between Neural Nets, FFmpeg recipes, and MPV Shaders."
+
+arguments:
+  - flag: "--input"
+    name: "Input Video Source (-i)"
+    type: "file"
+    required: true
+
+  - flag: "--mode"
+    name: "Processing Core Engine (-m)"
+    type: "choice"
+    choices: ["ai", "recipe", "frei0r", "shader"]
+    default: "ai"
+
+  - flag: "--output"
+    name: "Custom Output Target Path (-o)"
+    type: "text"
+    placeholder: "Omit to auto-calculate styled suffix filename"
+
+  - flag: "--shader"
+    name: "GLSL GPU Shader Source (-s)"
+    type: "file"
+    placeholder: "Required only if 'shader' core engine is active"
+
+  # AI Engine Sub-tuning Flags
+  - flag: "--radius"
+    name: "AI: Guided Filter Radius (-r)"
+    type: "integer"
+    default: "1"
+
+  - flag: "--eps"
+    name: "AI: Epsilon Smoothing Curve (-e)"
+    type: "text"
+    default: "5e-3"
+
+  - flag: "--intensity"
+    name: "AI: Blending Intensity Weight"
+    type: "text"
+    default: "1.0"

@@ -43,6 +43,9 @@ ROUNDED=false
 VIGNETTE=false
 BORDER=false
 OVERLAY_TEXT=""
+LANG_OVERRIDE=""
+TMP_FILE=""
+trap '[[ -f "$TMP_FILE" ]] && rm -f "$TMP_FILE"' EXIT
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Argument parsing
@@ -56,6 +59,8 @@ while [[ $# -gt 0 ]]; do
     --output=*)      OUTPUT_DIR="${1#*=}"; shift ;;
     -t|--theme)      shift; THEME="${1?--theme requires value}"; shift ;;
     --theme=*)       THEME="${1#*=}"; shift ;;
+    --lang)          shift; LANG_OVERRIDE="${1?--lang requires value}"; shift ;;
+    --lang=*)        LANG_OVERRIDE="${1#*=}"; shift ;;
     --no-numbers)    SHOW_NUMBERS=false; shift ;;
     --font)          shift; FONT="${1?--font requires value}"; shift ;;
     --font=*)        FONT="${1#*=}"; shift ;;
@@ -71,13 +76,17 @@ while [[ $# -gt 0 ]]; do
     --no-color)      NO_COLOR=true; shift ;;
     -h|--help)
       cat <<EOF
-Usage: $0 -i <path> [options]
+Usage: 
+  BASIC: $0 -i <path> [options]
+    RAW: echo "print('hello world')" | $0 -i -
+    CAT: cat template.html | $0 -i - --lang html
 
 Options:
-  -i, --input <file|dir>     Required
+  -i, --input <file|dir>      Required ('-' for piped input)
   -o, --output <dir>
   -t, --theme basic|cyberpunk|1980 (default: basic)
-      --no-window            Disable window chrome
+      --lang <language>        Override syntax language (useful for pipes)
+      --no-window              Disable window chrome
       --no-shadow
       --rounded --vignette --border
       --font "Your Font"
@@ -90,7 +99,9 @@ EOF
 done
 
 [[ -z "$INPUT" ]] && { print_error "--input is required"; exit 1; }
-[[ ! -e "$INPUT" ]] && { print_error "'$INPUT' does not exist"; exit 1; }
+if [[ "$INPUT" != "-" ]]; then
+    [[ ! -e "$INPUT" ]] && { print_error "'$INPUT' does not exist"; exit 1; }
+fi
 
 THEME=$(echo "$THEME" | tr '[:upper:]' '[:lower:]')
 
@@ -139,19 +150,26 @@ print_info "Saving to: ${BOLD}$OUTPUT_DIR${RESET}"
 # Collect files – Clean, reliable, and easy to edit
 # ──────────────────────────────────────────────────────────────────────────────
 
-# ← Add or remove extensions here (one per line, no quotes needed)
+# Added txt here so it gets detected in folder scans
 SUPPORTED_EXTENSIONS=(
   py php html htm
   js jsx ts tsx
   rs go sh bash
   rb css scss
   json yaml yml toml
-  md markdown
+  md markdown txt
 )
 
 FILES=()
 
-if [[ -d "$INPUT" ]]; then
+# Check if input is '-' or if we are piping content
+if [[ "$INPUT" == "-" ]] || [[ ! -t 0 && -z "$INPUT" ]]; then
+    # We are piping content!
+    TMP_FILE=$(mktemp /tmp/snapshot_input.XXXXXX)
+    cat > "$TMP_FILE"
+    FILES=("$TMP_FILE")
+    print_info "Processing piped input"
+elif [[ -d "$INPUT" ]]; then
   # Build proper OR conditions
   conditions=()
   for ext in "${SUPPORTED_EXTENSIONS[@]}"; do
@@ -190,14 +208,16 @@ fi
 
 print_info "Found ${#FILES[@]} file(s) to process"
 
-# Silicon flags (fixed – no more --window-controls)
+# Silicon flags
 SILICON_BASE=(
   --font "$FONT"
   --theme "$SILICON_THEME"
   --background "$BG_COLOR"
 )
 
+# Apply Options Configurations	
 [[ "$SHOW_NUMBERS" == false ]] && SILICON_BASE+=(--no-line-number)
+[[ "$SHOW_WINDOW" == false ]] && SILICON_BASE+=(--no-window-controls)
 [[ "$SHOW_SHADOW" == true ]] && SILICON_BASE+=(--shadow-color "$SHADOW_COLOR" --shadow-blur-radius "$SHADOW_BLUR")
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -207,10 +227,18 @@ SILICON_BASE=(
 for file in "${FILES[@]}"; do
   print_info "Processing ${CYAN}$file${RESET}"
 
-  lang="${file##*.}"
-  lang="${lang,,}"
-  [[ "$lang" == "sh" ]] && lang="bash"
-  [[ "$lang" == "js" ]] && lang="javascript"
+  if [[ -n "$LANG_OVERRIDE" ]]; then
+      lang="$LANG_OVERRIDE"
+  elif [[ "$file" == *"/tmp/snapshot_input"* ]]; then
+      lang="html"
+  else
+      # Normal file detection
+      lang="${file##*.}"
+      lang="${lang,,}"
+      [[ "$lang" == "sh" ]] && lang="bash"
+      [[ "$lang" == "js" ]] && lang="javascript"
+      [[ "$lang" == "txt" ]] && lang="text"  # Remap txt to text for silicon compatibility
+  fi
 
   base="$(basename "$file" | sed 's/\.[^.]*$//')"
   normal="$OUTPUT_DIR/${base}-${THEME}.png"

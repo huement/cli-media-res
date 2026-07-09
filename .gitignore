@@ -7,3 +7,4 @@ generativeSVGs/node_modules/
 *.mov
 **/*.mp4
 **/*.mov
+.venv

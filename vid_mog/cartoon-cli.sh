@@ -155,7 +155,7 @@ case $MODE in
      [blended]format=yuv420p[out]" \
     -map "[out]" -c:a copy -y "$OUTPUT"
     ;;
-	
+
   frei0r)
     echo "🔌 Engine: FFmpeg Frei0r Plugin..."
     # Verify plugin presence first

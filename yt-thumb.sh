@@ -63,10 +63,10 @@ trap cleanup EXIT
 # --------------------------------------------------------
 echo "🔍 Analyzing format for: $FILENAME..."
 
-# Query ffprobe to see if the input file contains a valid video stream
-IS_VIDEO=$(ffprobe -v error -select_streams v:0 -show_entries stream=codec_type -of default=noprint_wrappers=1:nokey=1 "$INPUT_FILE" < /dev/null)
+# Read the file's true MIME type using the system utility
+MIME_TYPE=$(file --mime-type -b "$INPUT_FILE")
 
-if [[ "$IS_VIDEO" == "video" ]]; then
+if [[ "$MIME_TYPE" == video/* ]]; then
     echo "🎥 Video detected! Extracting frame at timecode: $TIMECODE..."
     
     # Create a lossless temporary PNG frame file
@@ -82,8 +82,11 @@ if [[ "$IS_VIDEO" == "video" ]]; then
     
     # Redirect ImageMagick's target path to point to our newly extracted frame
     PROCESSING_SRC="$TEMP_FRAME"
-else
+elif [[ "$MIME_TYPE" == image/* ]]; then
     echo "📸 Image detected! Passing straight to formatting pipeline..."
+else
+    echo "❌ Error: Unsupported file type ($MIME_TYPE). Must be an image or video."
+    exit 1
 fi
 
 # --------------------------------------------------------
