@@ -1,161 +1,180 @@
+# 🎛️ pywocky
+## Media Management Suite & TUI Orchestrator
 
-# 🎛️ CLI Media Resource Suite & TUI Orchestrator
+■◤◢◤◢◤◢◤◢◤◢■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■◣◥◣◥◣◥◣◥◣◥■
 
-[![Python Version](https://img.shields.io/badge/python-3.12%20%7C%203.14-blue.svg)](https://www.python.org/downloads/)
-[![TUI Framework](https://img.shields.io/badge/TUI_Framework-Textual-ff5f87.svg?logo=python&logoColor=white)](https://github.com/Textualize/textual)
-[![Platform Support](https://img.shields.io/badge/Platform-macOS_Apple_Silicon_%7C_AMD-black.svg?logo=apple&logoColor=white)](https://www.apple.com/)
-[![Acceleration Engine](https://img.shields.io/badge/Hardware_Accel-VideoToolbox-success.svg?logo=ffmpeg&logoColor=white)](https://ffmpeg.org/)
-[![Video Core](https://img.shields.io/badge/Video_Engine-MoviePy_v2.x-brightgreen.svg)](https://zulko.github.io/moviepy/)
+[![Python Version](https://img.shields.io/badge/python-3.12%20%7C%203.14-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![Terminal Command](https://img.shields.io/badge/command-pywocky-00E5FF.svg?logo=gnumetacharacters&logoColor=white)](#-installation--global-setup)
+[![TUI Framework](https://img.shields.io/badge/TUI_Engine-Textual_v1.0+-ff5f87.svg?logo=python&logoColor=white)](https://github.com/Textualize/textual)
+[![Hardware Accel](https://img.shields.io/badge/Hardware_Accel-Apple_VideoToolbox-success.svg?logo=ffmpeg&logoColor=white)](https://ffmpeg.org/)
+[![Submodules](https://img.shields.io/badge/Submodules-Git_Integrated-orange.svg?logo=git&logoColor=white)](#-git-submodule-integration)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A unified, interactive terminal ecosystem for automating high-performance video optimization, folder-based smart GIF generation, and advanced media processing on macOS.
-This repository features a centralized **Textual TUI Orchestrator Engine** that dynamically compiles user interfaces from simple YAML definitions, routing distinct computational modules through isolated, version-optimized virtual environments.
+**`pywocky`** is a unified, system-wide terminal command and interactive TUI orchestrator built to manage media processing, video optimization, batch image conversions, text-to-speech synthesis, and cloud sync pipelines from anywhere in your terminal.
 
-## ✨ Features
+Powered by **Textual**, `pywocky` dynamically generates user interface forms from simple YAML definitions, routes subprocess executions to isolated virtual environments, and suspends itself to launch full interactive terminal sub-applications (like **`tts-blendr`**).
 
-* **Dynamic TUI Blueprint Framework (app.py)**: An interactive dashboard powered by Textual. Add a new script, drop a simple YAML configuration into /tools, and the TUI will instantly auto-generate inputs, selects, and execution blocks.
-* **Isolated Multi-Venv Routing Engine**: Built-in environment mapping allows your primary TUI to run on cutting-edge runtimes (e.g., Python 3.14) while seamlessly delegating complex modules (like legacy TensorFlow blocks) to completely separate, isolated virtual environments (e.g., Python 3.12).
-* **Smart-Crop Bounding Box Engine (pyGifr.py)**: Scans directories of images, automatically detects the absolute smallest bounding target resolution, and compiles them into beautifully centered, aspect-filled, fading animated GIFs and MP4s.
-* **Optimized Video-to-GIF Suite (vid2gif.py)**: A modern rendering layer utilizing MoviePy 2.x with explicit control scales for dimensions and frame rates to prevent file-size bloating.
-* **Hardware Accelerated Shell Hooks (vidpro.sh)**: Direct integration with Apple VideoToolbox for blazing-fast HEVC/H.265 video upscaling, sharpening, and color grading utilizing macOS GPU architectures.
+![pywocky_preview.png](pywocky_preview.png)
 
-### 📁 Repository Architecture
+■◤◢◤◢◤◢◤◢◤◢■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■◣◥◣◥◣◥◣◥◣◥■
 
-```plaintext
+## ✨ Key Features
+
+* **🌐 Global `pywocky` CLI Command**: Installed via `pipx` or editable `pip` packages—type `pywocky` anywhere in your terminal to launch the interface regardless of your current directory.
+* **⚡ Dynamic YAML Manifest Engine**: Drop a `.yaml` file into `pywocky/tools/` and `pywocky` auto-generates forms, text validation, dropdown selects, and shell execution workflows.
+* **🚀 Interactive Sub-App Suspension**: Launches standalone TUI tools (like `tts-blendr`) seamlessly using Textual's `self.suspend()`, handing full TTY control to child apps before cleanly returning to `pywocky`.
+* **🧠 Smart Virtual Environment Routing**: Auto-detects and targets tool-specific virtual environments (`.venv`), allowing the primary TUI to run on standard runtimes while routing ML tools to isolated environments (e.g. Python 3.12 for `onnxruntime`).
+* **🎨 Categorized & Stylized Sidebar**: Automatic categorization and icon tagging (`🖼️ Image Processing`, `🎬 Video & Animation`, `🎙️ Audio & Speech`, `🛠️ Utilities & Code`).
+* **🍎 Apple Silicon GPU Acceleration**: Native integration with macOS **VideoToolbox** (`hevc_videotoolbox` / `h264_videotoolbox`) for ultra-fast HEVC/H.265 video encoding and 10-bit LUT color workflows.
+* **ONNX Powered Text to Speech Local AI**: Using [TTS-BLENDR](https://github.com/huement/tts-blendr) you can turn text files into custom totally unique blended voices locally using HuggingFace AI Models that run on basic hardware. 
+
+■◤◢◤◢◤◢◤◢◤◢■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■◣◥◣◥◣◥◣◥◣◥■
+
+## 📁 Repository Architecture
+
+```text
 cli-media-res/
-│
-├── TUI/                          # Main TUI Orchestrator Space
-│   ├── app.py                    # Core Textual Dashboard App
-│   ├── venv/                     # Primary TUI Venv (Python 3.14+)
-│   └── tools/                    # Dynamic UI Manifest YAMLs
-│       ├── pyGifr.yaml
-│       ├── video_to_gif.yaml
-│       └── cartoonize.yaml
-│
-├── gifs/                         # Shared Suite for Media Transcoding
-│   ├── .venv/                    # Secondary Venv for MoviePy / Pillow (Python 3.14)
-│   ├── pyGifr.py                 # Folder Bounding-Box Creator
-│   └── vid2gif.py                # High-Compression Video-to-GIF Converter
-│
-├── ai_tools/                     # Specialized Machine Learning Space
-│   ├── venv_312/                 # Deep Learning Isolated Venv (Python 3.12)
-│   └── cartoonize.py             # Neural Net Multi-Engine Stylizer
-│
-└── legacy_bash/                  # Bare-Metal Hardware Accelerated Scripts
-    ├── vidpro.sh                 # All-in-one Lanczos Upscaler & Filter Script
-    └── bash-args.sh              # Custom CLI Associative Array Parsing Library
+├── pyproject.toml              # Modern Python package specs & 'pywocky' CLI entrypoint
+├── requirements.txt            # Suite-wide dependency specifications
+├── pywocky/                    # Core Orchestrator Package
+│   ├── app.py                  # Main Textual Orchestrator Application
+│   └── tools/                  # YAML tool definitions & UI manifests
+│       ├── media_optimize.yaml
+│       ├── pygifr.yaml
+│       ├── s3upload.yaml
+│       ├── thumbnails.yaml
+│       └── tts_blendr.yaml
+├── file_mgmt/                  # Native Python File Management Tools
+│   ├── png2webp.py             # Batch PNG -> WebP converter
+│   ├── rename.py               # Substring batch filename cleaner
+│   ├── s3upload.py             # S3/MinIO cloud sync with WebP auto-conversion
+│   └── webp2png.py             # WebP -> 1:1 PNG + 150% Lanczos upscaler
+├── optimize_scripts/           # Consolidated Optimization Suite
+│   ├── optimize_images.py      # In-place JPEG/PNG compression & WebP generator
+│   └── thumbnailer.py          # Smart-crop thumbnailer & video frame extractor
+├── vid_mog/                    # Video Processing & FX Pipeline
+│   ├── media_optimize.py       # GPU based video optimizer & LUT engine
+│   ├── cartoon-cli.sh          # AI Video Stylizer
+│   └── glitch-cli.sh           # RGB shift & glitch video filters
+├── gifs/                       # GIF Creation Suite
+│   ├── pyGifr.py               # Auto-bounding-box animated GIF compiler
+│   └── vid2gif.py              # High-compression Video-to-GIF converter
+├── submodules/                 # External Integrated Projects
+│   └── tts-blendr/             # Voice synthesis and dual-voice blending TUI
+└── code_snapshots/             # Terminal code screenshot tools
 ```
 
-## 🛠️ System Pre-requisites
+# 🚀 Installation & Global Setup
+pywocky is designed to be installed in **Editable Mode** using pipx. This exposes the global pywocky command system-wide while reflecting any local script or YAML edits instantly.
 
-This suite leverages low-level system binaries for hardware acceleration. Before initializing the Python layer, set up your core macOS utilities via Homebrew:
-
+### 1\. Prerequisites (macOS / Linux)
+Ensure core system dependencies are installed via Homebrew:
 
 ```bash
-# Update local Bash (macOS defaults to v3.2; Scripts require v4.0+ for associative arrays)
-brew install bash
-
-# Install system FFmpeg with active Apple VideoToolbox codecs
+# Install FFmpeg with Apple VideoToolbox support
 brew install ffmpeg ffprobe
 ```
 
-## 🚀 Environment Setup & Installation
-
-To run the full decoupled environment suite securely without crashing dependency paths, initialize your virtual sandboxes independently:
-
-### 1. Initialize the Core TUI Application
+### 2\. Install pywocky Globally (Option 1)
+Clone the repository and install it using pipx:
 
 ```bash
-cd TUI
-python3 -m venv venv
-source venv/bin/activate
-pip install textual rich pyyaml
-deactivate
+git clone --recursive [https://github.com/huement/cli-media-res.git](https://github.com/huement/cli-media-res.git)
+cd cli-media-res
+
+# Install pywocky globally with all optional media dependencies
+
+pipx install --editable ".[all]"
 ```
 
-### 2. Initialize the GIF Production Engine
+*(Note: If using standard virtual environments instead of pipx, run pip install -e ".[all]" inside your active venv.)*
+
+You can also edit the `.[all]` for smaller options if you only plan on using a specific subset of the tools. For all the available options see this file `/pywocky.egg-info/requires.txt`
+
+### 3\. Initialize Git Submodules (TTS Blendr)
+
+For more information about TTS-Blendr head over to its repository here: [https://github.com/huement/tts-blendr](https://github.com/huement/tts-blendr). It uses the exact same textual UI library as pyWocky and works in much the same manor, its focus is only on generating speech from text files, which allows it to seemless fit into this larger Audio / Visual application. 
 
 ```bash
-cd ../gifs
-python3 -m venv .venv
-source .venv/bin/activate
-pip install moviepy pillow rich
-deactivate
+tts-blendr runs inside its own isolated Python 3.12 environment:
+
+# Initialize submodules
+
+git submodule update --init --recursive
 ```
 
-### 3. Initialize the Machine Learning Studio(Optional)
+# Create a Python 3.12 virtual environment for tts-blendr
 
 ```bash
-cd ../ai_tools
-python3.12 -m venv venv_312
-source venv_312/bin/activate
-pip install tensorflow==2.15.0 opencv-python numpy==1.25.2 sk-video
-deactivate
+python3.12 -m venv submodules/tts-blendr/.venv
+./submodules/tts-blendr/.venv/bin/pip install -r submodules/tts-blendr/requirements.txt
 ```
 
-## 🎛️ How the Dynamic Forms Work
+# 🎛️ Usage
+Once installed, simply type **pywocky** in any terminal window:
 
-Adding a new tool to your terminal dashboard requires zero interface programming. You simply map its command structure into a YAML format inside TUI/tools/:
+```bash
+pywocky
+```
+### 🛠️ Adding New Tools via YAML
+You can integrate any Python or Bash script into pywocky without editing the core application code. Just create a new .yaml file inside pywocky/tools/:
 
 ```yaml
-id: "video_to_gif"
-name: "Video to Optimized GIF"
-script_path: "./gifs/vid2gif.py"
-description: "Compress and convert video files into highly optimized animated GIFs."
+id: "my_tool"
+name: "My Custom Tool"
+category: "Utilities & Code"
+icon: "🛠️"
+script_path: "file_mgmt/my_script.py"
+description: "Process files automatically using custom arguments."
 
 arguments:
-  - flag: "--inputs"
-    name: "Input Video Path(s)"
-    type: "text"
-    placeholder: "/path/to/video.mp4"
-    required: true
+- name: "Target Directory"
+  flag: "" # Blank flag = Positional argument
+  type: "file"
+  default: "."
+  required: true
 
-  - flag: "--width"
-    name: "Max Width (Pixels)"
-    type: "integer"
-    default: "600"
+- name: "Compression Level"
+  flag: "--level"
+  type: "integer"
+  default: "5"
 
-  - flag: "--fps"
-    name: "Frame Rate (FPS)"
-    type: "integer"
-    default: "12"
+- name: "Enable Hard Core Mode"
+  flag: "--hardcore"
+  type: "boolean"
+  default: false
 ```
 
+### 🚀 Interactive TUI Tools
+For tools that feature their own native Textual interface (like tts-blendr), set interactive: true in their YAML definition. pywocky will automatically suspend itself and hand full control of the terminal to the child app when launched:
 
-The orchestrator instantly interprets this layout, constructs appropriate terminal widgets, performs text validations, and hooks the runtime parameters into safe, shell-escaped `subprocess.Popen` execution threads.
+```yaml
+id: "tts_blendr"
+name: "TTS Blendr"
+category: "Audio & Speech"
+icon: "🎙️"
+script_path: "submodules/tts-blendr/main.py"
+venv_path: "submodules/tts-blendr/.venv"
+interactive: true
+ ```
+ 
+# 🧰 Summary of Included Tools
 
-## 💻 Manual Terminal Execution
+| **Category** | **Tool** | **Description** |
+|---|---|---|
+| **🎙️ Audio & Speech** | **TTS Blendr** | Voice synthesis & dual-voice blending TUI *(Interactive)* |
+| **🖼️ Image Processing** | **Web & Image Optimizer** | Max compression in-place + auto WebP creation |
+|  | **Smart Thumbnailer** | Distortion-free smart cropping & video frame capture |
+|  | **PNG to WebP** | Fast batch PNG to WebP conversion |
+|  | **WebP to PNG** | WebP to 1:1 PNG + 150% Lanczos upscaling |
+|  | **S3 Sync & Upload** | S3/MinIO bucket folder sync with on-the-fly WebP conversion |
+| **🎬 Video & Animation** | **Video Optimizer & FX** | Hardware-accelerated HEVC/H.264, 10-bit LUTs, & FX |
+|  | **CyberGif (pyGifr)** | Auto-bounding box folder GIF & MP4 compiler |
+|  | **Video to GIF** | High-compression video-to-GIF converter |
+| **🛠️ Utilities & Code** | **Batch Filename Cleaner** | Strip unwanted substrings from folder filenames |
+|  | **Code Snapshots** | Code screenshot generator |
 
-All tools can be run independently from the terminal outside of the UI orchestrator using their explicit native virtual environment bins:
 
-**Convert a Heavy MP4 into a Compressed 12 FPS Web-Ready GIF:**
-
-```bash
-./gifs/.venv/bin/python ./gifs/vid2gif.py --inputs ./inputs/sample.mp4 --width 600 --fps 12
-```
-
-**Batch Compile a Folder of High-Resolution Frames using Automated Crop-Matching:**
-
-```bash
-./gifs/.venv/bin/python ./gifs/pyGifr.py --dirs ./inputs/rendering_frames --fps 15
-```
-
-**Run Hardware Accelerated H.265 GPU Upscaling (Bare-Metal Shell):**
-
-```bash
-./legacy_bash/vidpro.sh --input ~/Movies/Source --output ~/Movies/Optimized --lut ./CineGrade.cube --grain
-```
-
-## License & Sponsorship
-
-Distributed freely under the open-source **MIT License**. Maintained, optimized, and engineered / sponsored by **[HUEMENT](https://huement.com/)**.
-This ecosystem is open-source. Review individual module code structures and engine script headers for specialized processing details.
-
-<p align="center">
-  <strong>If this software saved you time or a headache, consider keeping the engine running!</strong><br><br>
-  <a href='https://ko-fi.com/U1A7222617' target='_blank'>
-    <img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' />
-  </a>
-</p>
-
-**NOTE** If you want a specific feature added, I do freelance work and would be more than happy to work something out. [Contact Me Here](https://huement.com/contact)
+# 📄 License & Sponsorship
+Distributed freely under the open-source **MIT License**. Engineered and maintained by **[HUEMENT](https://huement.com/)**.
+**Need a custom feature or video pipeline built?** I perform freelance software engineering and automation work. [Contact HUEMENT Here](https://huement.com/contact).
