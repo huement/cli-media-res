@@ -1,7 +1,7 @@
 # 🎛️ pywocky
 ## Media Management Suite & TUI Orchestrator
 
-◤◢◤◢◤◢◤◢◤◢■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■◣◥◣◥◣◥◣◥◣◥
+◤◢◤◢◤◢◤◢◤◢■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■◣◥◣◥◣◥◣◥◣◥
 
 [![Python Version](https://img.shields.io/badge/python-3.12%20%7C%203.14-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![Terminal Command](https://img.shields.io/badge/command-pywocky-00E5FF.svg?logo=gnumetacharacters&logoColor=white)](#-installation--global-setup)
@@ -16,7 +16,7 @@ Powered by **Textual**, `pywocky` dynamically generates user interface forms fro
 
 ![pywocky_preview.png](pywocky_preview.png)
 
-◤◢◤◢◤◢◤◢◤◢■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■◣◥◣◥◣◥◣◥◣◥
+◤◢◤◢◤◢◤◢◤◢■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■◣◥◣◥◣◥◣◥◣◥
 
 ## ✨ Key Features
 
@@ -28,7 +28,7 @@ Powered by **Textual**, `pywocky` dynamically generates user interface forms fro
 * **🍎 Apple Silicon GPU Acceleration**: Native integration with macOS **VideoToolbox** (`hevc_videotoolbox` / `h264_videotoolbox`) for ultra-fast HEVC/H.265 video encoding and 10-bit LUT color workflows.
 * **ONNX Powered Text to Speech Local AI**: Using [TTS-BLENDR](https://github.com/huement/tts-blendr) you can turn text files into custom totally unique blended voices locally using HuggingFace AI Models that run on basic hardware. 
 
-◤◢◤◢◤◢◤◢◤◢■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■◣◥◣◥◣◥◣◥◣◥
+◤◢◤◢◤◢◤◢◤◢■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■◣◥◣◥◣◥◣◥◣◥
 
 ## 📁 Repository Architecture
 
