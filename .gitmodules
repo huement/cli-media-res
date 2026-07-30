@@ -1,0 +1,3 @@
+[submodule "submodules/tts-blendr"]
+	path = submodules/tts-blendr
+	url = https://github.com/huement/tts-blendr

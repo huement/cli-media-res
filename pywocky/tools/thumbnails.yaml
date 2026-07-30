@@ -1,0 +1,34 @@
+id: thumbnails
+name: Smart Thumbnailer & Video Grabber
+description: Generates center-cropped, distortion-free thumbnails from images or video frames
+script_path: optimize_scripts/thumbnails.py
+
+arguments:
+  - name: Target File or Directory
+    flag: "" # Positional argument
+    type: file
+    default: "."
+    placeholder: "Select image, video, or folder..."
+    required: true
+
+  - name: Width (px)
+    flag: --width
+    type: integer
+    default: "500"
+
+  - name: Height (px)
+    flag: --height
+    type: integer
+    default: "500"
+
+  - name: YouTube 16:9 Preset (1280x720)
+    flag: --youtube
+    type: boolean
+    default: false
+    description: "Overrides dimensions to 1280x720"
+
+  - name: Video Frame Timecode
+    flag: --timecode
+    type: text
+    default: "00:00:01"
+    placeholder: "00:00:01"

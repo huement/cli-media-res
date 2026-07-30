@@ -1,0 +1,37 @@
+id: "pyviddy_cartoonize"
+name: "AI Cartoonizer & Media Suite"
+script_path: "./vid_mog/pyviddy/cartoonize.py"
+description: "Multi-Engine Pipeline: Swaps between Neural Nets, FFmpeg recipes, and MPV Shaders."
+
+arguments:
+  - flag: "--input"
+    name: "Input Video Path"
+    type: "file"
+    required: true
+
+  - flag: "--mode"
+    name: "Processing Core Engine"
+    type: "choice"
+    choices: ["ai", "recipe", "frei0r", "shader"]
+    default: "ai"
+
+  - flag: "--output"
+    name: "Output Video Path"
+    type: "text"
+    placeholder: "Omit to auto-generate filename"
+
+  - flag: "--shader"
+    name: "GLSL GPU Shader Source"
+    type: "file"
+    placeholder: "Required only if 'shader' engine is active"
+
+  # AI Engine Sub-tuning Flags
+  - flag: "--radius"
+    name: "AI: Guided Filter Radius"
+    type: "integer"
+    default: "1"
+
+  - flag: "--eps"
+    name: "AI: Epsilon Smoothing Curve"
+    type: "text"
+    default: "5e-3"

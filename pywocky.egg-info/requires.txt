@@ -1,0 +1,15 @@
+textual>=1.0.0
+rich>=13.0.0
+pyyaml>=6.0.0
+
+[ai]
+opencv-python>=4.8.0
+numpy>=1.26.0
+sk-video>=1.1.10
+
+[all]
+pywocky[ai,media]
+
+[media]
+moviepy>=2.0.0
+Pillow>=10.0.0

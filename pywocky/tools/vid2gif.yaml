@@ -1,0 +1,21 @@
+id: "video_to_gif"
+name: "Video to Optimized GIF"
+script_path: "./gifs/vid2gif.py"
+description: "Compress and convert video files into highly optimized animated GIFs."
+
+arguments:
+  - flag: "--inputs"
+    name: "Input Video Path(s)"
+    type: "text"
+    placeholder: "/path/to/video.mp4"
+    required: true
+
+  - flag: "--width"
+    name: "Max Width (Pixels)"
+    type: "integer"
+    default: "600"
+
+  - flag: "--fps"
+    name: "Frame Rate (FPS)"
+    type: "integer"
+    default: "12"

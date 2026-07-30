@@ -8,3 +8,5 @@ generativeSVGs/node_modules/
 **/*.mp4
 **/*.mov
 .venv
+code_snapshots/screenshots/*.png
+

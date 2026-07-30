@@ -1,0 +1,2 @@
+[console_scripts]
+pywocky = pywocky.app:main

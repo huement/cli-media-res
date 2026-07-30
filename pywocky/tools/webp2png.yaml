@@ -1,0 +1,16 @@
+id: webp2png
+name: WebP to PNG Upscaler
+description: Convert WebP to PNG + 150% Lanczos upscaled copy
+script_path: file_mgmt/webp2png.py
+
+arguments:
+  - name: WebP File
+    flag: "" # Positional argument
+    type: file
+    placeholder: "Select .webp file..."
+    required: true
+
+  - name: Output Folder
+    flag: --output-dir
+    type: file
+    default: "."

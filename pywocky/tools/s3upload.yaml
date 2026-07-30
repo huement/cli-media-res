@@ -1,0 +1,27 @@
+id: s3upload
+name: S3 Img2WebP Upload
+description: Uploads files/folders to S3 with automatic PNG/JPG to WebP conversion
+script_path: file_mgmt/s3upload.py
+
+arguments:
+  - name: Target Directory
+    flag: "" # Positional argument
+    type: file
+    default: "."
+    placeholder: "Path to folder to sync..."
+    required: true
+
+  - name: Extension Filter
+    flag: --extension
+    type: text
+    placeholder: "e.g., png, webp, jpg (Leave blank for all)"
+
+  - name: Remote Folder Prefix
+    flag: --remote-dir
+    type: text
+    placeholder: "Override target bucket directory"
+
+  - name: WebP Quality
+    flag: --quality
+    type: integer
+    default: "80"

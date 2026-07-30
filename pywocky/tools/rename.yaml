@@ -1,0 +1,16 @@
+id: clean_rename
+name: Batch Filename Cleaner
+description: Strip unwanted substrings (like '-deep-toon') from filenames in a folder
+script_path: file_mgmt/rename.py
+
+arguments:
+  - name: String to Remove
+    flag: "" # Positional argument
+    type: text
+    placeholder: "e.g., -deep-toon or _backup"
+    required: true
+
+  - name: Target Directory
+    flag: --directory
+    type: file
+    default: "."

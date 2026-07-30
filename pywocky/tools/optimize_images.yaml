@@ -1,0 +1,21 @@
+id: optimize_images
+name: Web & Image Optimizer
+description: Compresses JPEGs/PNGs in-place and builds lightweight WebP variants
+script_path: optimize_scripts/optimize_images.py
+
+arguments:
+  - name: Target Image or Folder
+    flag: "" # Positional argument
+    type: file
+    default: "."
+    required: true
+
+  - name: Compression Quality (1-100)
+    flag: --quality
+    type: integer
+    default: "80"
+
+  - name: Disable WebP Generation
+    flag: --no-webp
+    type: boolean
+    default: false

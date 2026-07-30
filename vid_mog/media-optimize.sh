@@ -11,7 +11,7 @@ DESCRIPTION="Ultimate Video Toolkit: Combines smart optimization, motion interpo
 KEYWORDS=(
     "--input|-i;string"
     "--output|-o;string"
-    "--optimize;bool"
+    "--optimize;string"
     "--downscale|-ds;string"  # CHANGED: Swapped from bool to string
     "--bloom;bool"
     "--twinkle;bool"
@@ -45,7 +45,17 @@ USAGE["--watermark"]="Path to the watermark image."
 USAGE["--wm-width"]="Width of the watermark (Default: 120)."
 USAGE["--bitrate"]="Video bitrate (Default: 2000k)."
 
-parse_args "$@" || exit $?
+ARGS_CLEANED=()
+for arg in "$@"; do
+    if [[ "$arg" == --*=* ]]; then
+        ARGS_CLEANED+=("${arg%%=*}" "${arg#*=}")
+    else
+        ARGS_CLEANED+=("$arg")
+    fi
+done
+
+# Pass the sanitized array to bash-args
+parse_args "${ARGS_CLEANED[@]}" || exit $?
 
 if [[ "${KW_ARGS[--optimize]}" == "true" ]] && [[ -n "${KW_ARGS[--downscale]}" ]]; then
     echo "❌ Error: You cannot use --optimize (upscale) and --downscale at the same time."
@@ -94,7 +104,7 @@ fi | while IFS= read -r -d '' file; do
     [[ -z "$WIDTH" ]] && WIDTH=0
 
     echo "🎬 Analyzing: $filename (${WIDTH}px wide)"
-
+	RESIZED=false # Track if scaling was applied
     # Base baseline pixel format structure
     V_FILTERS="format=pix_fmts=yuv420p" 
     NAME_SUFFIX=""
@@ -103,8 +113,8 @@ fi | while IFS= read -r -d '' file; do
     A_ARGS=(-c:a copy)
     V_ARGS=(-c:v hevc_videotoolbox -b:v "$BITRATE" -tag:v hvc1)
 
-    # 1. SMART OPTIMIZATION (Denoise & Dynamic Upscale Layout)
-    OPTIMIZE_TARGET="${KW_ARGS[--optimize]}"
+    # 1. SMART OPTIMIZATION (Denoise & Dynamic Upscale Layout) CASE INSENITIVE
+	OPTIMIZE_TARGET=$(echo "${KW_ARGS[--optimize]}" | sed 's/^=//' | tr '[:upper:]' '[:lower:]')
 
     if [[ -n "$OPTIMIZE_TARGET" && "$OPTIMIZE_TARGET" != "none" && "$OPTIMIZE_TARGET" != "false" ]]; then
         # Always apply the high-quality denoise filter if optimization is active
@@ -128,6 +138,7 @@ fi | while IFS= read -r -d '' file; do
                 echo "    -> Upscaling to $OPTIMIZE_TARGET..."
                 V_FILTERS="${V_FILTERS},scale=${TARGET_W}:${TARGET_H}:flags=lanczos,unsharp=3:3:0.5:3:3:0.5"
                 NAME_SUFFIX="${NAME_SUFFIX}-${OPTIMIZE_TARGET}"
+				RESIZED=true
             else
                 echo "    -> Skipping upscale (Source video width ${WIDTH}px is already >= ${TARGET_W}px)."
                 NAME_SUFFIX="${NAME_SUFFIX}-orig"
@@ -145,7 +156,7 @@ fi | while IFS= read -r -d '' file; do
 
         echo "    -> Downscaling to ${DS_SIZE}p..."
         V_FILTERS="${V_FILTERS},scale=-2:${DS_SIZE}"
-    
+    	RESIZED=true
         # Detect Mac Hardware Architecture
         MAC_ARCH=$(uname -m)
 
@@ -237,7 +248,12 @@ fi | while IFS= read -r -d '' file; do
     fi
 
 	if [ $? -eq 0 ]; then
-        echo "✅ Finished: $output_name"
+        echo "✅ Finished: $output_name $RESIZED"
+		# Display size if downscale or upscale ran
+        if [[ "$RESIZED" == "true" ]]; then
+            NEW_DIM=$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$output_name")
+            echo "📐 Output dimensions: ${NEW_DIM}"
+        fi
     else
         echo "❌ Error: FFmpeg failed to process $filename"
     fi

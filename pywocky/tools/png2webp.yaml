@@ -1,0 +1,15 @@
+id: png2webp
+name: PNG to WebP Converter
+description: Batch convert PNG files in a folder to WebP format
+script_path: file_mgmt/png2webp.py
+
+arguments:
+  - name: Target Folder
+    flag: "" # Positional argument
+    type: file
+    default: "."
+  
+  - name: WebP Quality
+    flag: --quality
+    type: integer
+    default: "80"

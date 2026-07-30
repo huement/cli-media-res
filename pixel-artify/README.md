@@ -6,6 +6,14 @@ A command-line tool written in Python to convert images into pixel art, with opt
 
 This script takes an input image, downscales it to create larger "pixels", optionally reduces the color palette, and then scales it back up using nearest-neighbor interpolation. It can preserve transparency and add an optional "distressed edge" effect.
 
+-----
+
+## FORKED CODEBASE
+
+This section of the `cli-media-res` toolkit has been adapted from [https://github.com/marcusrprojects/pixel-artify](https://github.com/marcusrprojects/pixel-artify).  This project will make every effort to stay insync with that repo, while also making sure it is seemlessly integrated with the TUI and other `cli-media-res` ecosystem. A huge thanks to the `pixel-artify` developer, please show his repo, [https://github.com/marcusrprojects/pixel-artify](https://github.com/marcusrprojects/pixel-artify), some love with a star at the very least!
+
+-----
+
 ## Examples
 
 **Pixelated `-p 15` `-c 75`** | **Pixelated & Distressed `-p 25` `-c 50` `-d 10`**
@@ -55,7 +63,7 @@ Follow these steps to set up the project and its dependencies using a virtual en
     Clone the repository to your local machine using Git and navigate into the project directory:
 
     ```bash
-    git clone https://github.com/marcusrprojects/pixel-artify.git
+    git clone https://github.com/huement/cli-media-res.git
     cd pixel-artify
     ```
 
@@ -180,7 +188,7 @@ python pixel_artify.py <input_image> [options]
   * Lower values decay faster (more edge-focused).
 
   * Higher values penetrate deeper.
-  
+
   * Default: `0.65`
 
 * `-h, --help`:

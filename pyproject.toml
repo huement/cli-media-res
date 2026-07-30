@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pywocky"
+version = "0.1.0"
+description = "TUI orchestrator for media management tools"
+readme = "README.md"
+requires-python = ">=3.9"
+
+# Core dependencies strictly required for the TUI engine
+dependencies = [
+    "textual>=1.0.0",
+    "rich>=13.0.0",
+    "pyyaml>=6.0.0",
+]
+
+# Optional dependency groups for underlying tools
+[project.optional-dependencies]
+media = [
+    "moviepy>=2.0.0",
+    "Pillow>=10.0.0",
+]
+ai = [
+    "opencv-python>=4.8.0",
+    "numpy>=1.26.0",
+    "sk-video>=1.1.10",
+]
+all = [
+    "pywocky[media,ai]",
+]
+
+[project.scripts]
+pywocky = "pywocky.app:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+pywocky = ["tools/*.yaml"]

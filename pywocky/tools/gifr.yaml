@@ -1,0 +1,16 @@
+id: "pygifr"
+name: "CyberGif (pyGifr)"
+script_path: "./gifs/pyGifr.py"
+description: "Batch convert image folders into unified, auto-cropped high-quality GIFs and MP4s with smooth transitions."
+
+arguments:
+  - flag: "--dirs"
+    name: "Input Directories"
+    type: "text"
+    placeholder: "/path/to/folder1 /path/to/folder2"
+    required: true
+
+  - flag: "--fps"
+    name: "Frames Per Second (FPS)"
+    type: "integer"
+    default: "12"

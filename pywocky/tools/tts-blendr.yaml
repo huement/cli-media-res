@@ -1,0 +1,6 @@
+id: tts_blendr
+name: TTS Blendr
+description: Full interactive voice blending Text-To-Speech TUI engine with saved settings
+script_path: submodules/tts-blendr/main.py
+venv_path: submodules/tts-blendr/.venv
+interactive: true

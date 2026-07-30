@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import subprocess
 import os
 import sys
@@ -5,6 +6,7 @@ import tempfile
 import re
 import shutil
 import argparse
+import shlex
 from pathlib import Path
 
 def slugify(text):
@@ -20,7 +22,6 @@ class CyberGif:
         self.fade = fade
         self.total_dur = hold + (fade * 2)
         self.fade_out_start = hold + fade
-        # These will be dynamically set per directory
         self.width = None
         self.height = None
 
@@ -34,7 +35,6 @@ class CyberGif:
             str(img_path)
         ]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        # Returns a string like "1920x1080" -> split into integers
         dimensions = result.stdout.strip().split('x')
         return int(dimensions[0]), int(dimensions[1])
 
@@ -55,7 +55,7 @@ class CyberGif:
         input_path = Path(input_dir).resolve()
         
         if not input_path.is_dir():
-            print(f"❌ Skipping: {input_dir} is not a directory.")
+            print(f"❌ Skipping: '{input_dir}' is not a valid directory.")
             return
 
         # Gather images
@@ -83,9 +83,6 @@ class CyberGif:
             for i, img in enumerate(images):
                 clip_path = tmp_path / f"clip_{i:03d}.mp4"
                 
-                # The "Smart Crop" Logic directly inside FFmpeg:
-                # 1. force_original_aspect_ratio=increase scales the smaller side to match, filling the box.
-                # 2. crop=width:height slices off the overlapping outer edges directly from the center.
                 filter_str = (
                     f"scale={self.width}:{self.height}:force_original_aspect_ratio=increase,"
                     f"crop={self.width}:{self.height},"
@@ -142,15 +139,31 @@ class CyberGif:
 
 def main():
     parser = argparse.ArgumentParser(description="Batch convert image folders into unified cropped GIFs.")
-    parser.add_argument("dirs", nargs="+", help="One or more directories containing PNGs")
+    parser.add_argument("pos_dirs", nargs="*", help="Directories containing PNGs (positional fallback)")
+    parser.add_argument("--dirs", "-d", nargs="+", help="Directories containing PNGs (flag)")
     parser.add_argument("--fps", type=int, default=12, help="Frames per second (default: 12)")
+    parser.add_argument("--hold", type=float, default=2.0, help="Frame hold duration in seconds (default: 2.0)")
+    parser.add_argument("--fade", type=float, default=0.5, help="Crossfade duration in seconds (default: 0.5)")
     
     args = parser.parse_args()
 
-    # Removed fixed default sizing from init to allow automatic discovery
-    app = CyberGif(fps=args.fps)
+    # Collect inputs from either --dirs flag or positional arguments
+    raw_inputs = args.dirs if args.dirs else args.pos_dirs
+    if not raw_inputs:
+        print("❌ Error: No input directories provided.")
+        sys.exit(1)
 
-    for directory in args.dirs:
+    # Parse inputs in case a single space-separated string was passed from the TUI
+    target_dirs = []
+    for item in raw_inputs:
+        if " " in item and not Path(item).exists():
+            target_dirs.extend(shlex.split(item))
+        else:
+            target_dirs.append(item)
+
+    app = CyberGif(fps=args.fps, hold=args.hold, fade=args.fade)
+
+    for directory in target_dirs:
         try:
             app.process_directory(directory)
         except Exception as e:

@@ -1,0 +1,9 @@
+code_snapshots
+file_mgmt
+gifs
+optimize_scripts
+pixel-artify
+pywocky
+submodules
+temp
+vid_mog
