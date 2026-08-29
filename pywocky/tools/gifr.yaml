@@ -10,7 +10,38 @@ arguments:
     placeholder: "/path/to/folder1 /path/to/folder2"
     required: true
 
+  - flag: "--output"
+    name: "Output GIF Path"
+    type: "text"
+    placeholder: "Omit to auto-generate filename"
+    required: false
+
+  - flag: "--width"
+    name: "Output Width (px)"
+    type: "integer"
+    placeholder: "Auto (smallest width)"
+    required: false
+
+  - flag: "--height"
+    name: "Output Height (px)"
+    type: "integer"
+    placeholder: "Auto (smallest height)"
+    required: false
+
+  - flag: "--hold"
+    name: "Frame Hold Duration (sec)"
+    type: "integer"
+    default: "20"
+    required: false
+
+  - flag: "--fade"
+    name: "Crossfade Duration (sec)"
+    type: "integer"
+    default: "5"
+    required: false
+
   - flag: "--fps"
     name: "Frames Per Second (FPS)"
     type: "integer"
     default: "12"
+    required: false

@@ -1,37 +1,72 @@
 id: "pyviddy_cartoonize"
 name: "AI Cartoonizer & Media Suite"
 script_path: "./vid_mog/pyviddy/cartoonize.py"
-description: "Multi-Engine Pipeline: Swaps between Neural Nets, FFmpeg recipes, and MPV Shaders."
+description: "Multi-Engine Pipeline: Converts video into cartoon styles via Guided Filtering, FFmpeg recipes, or GLSL Shaders."
 
 arguments:
   - flag: "--input"
     name: "Input Video Path"
     type: "file"
     required: true
+    description: "Source video file to cartoonize (MP4, MOV, MKV)."
 
   - flag: "--mode"
     name: "Processing Core Engine"
     type: "choice"
-    choices: ["ai", "recipe", "frei0r", "shader"]
+    choices:
+      - label: "Neural AI Model (Guided Filter)"
+        value: "ai"
+      - label: "FFmpeg Recipe (Fast Color Quantization)"
+        value: "recipe"
+      - label: "frei0r Filter (Retro Cartoon)"
+        value: "frei0r"
+      - label: "GLSL GPU Shader (MPV Anime4K/Toon)"
+        value: "shader"
     default: "ai"
+    description: "Select processing engine core."
 
   - flag: "--output"
     name: "Output Video Path"
     type: "text"
     placeholder: "Omit to auto-generate filename"
+    description: "Destination video file path."
 
   - flag: "--shader"
-    name: "GLSL GPU Shader Source"
-    type: "file"
-    placeholder: "Required only if 'shader' engine is active"
+    name: "GLSL GPU Shader"
+    type: "choice"
+    choices: "./vid_mog/glsl/*.<GLSL,glsl>"
+    description: "Select GLSL shader preset from ./vid_mog/glsl/ (active when mode is 'shader')."
 
   # AI Engine Sub-tuning Flags
   - flag: "--radius"
-    name: "AI: Guided Filter Radius"
-    type: "integer"
-    default: "1"
+    name: "AI: Edge Outline Thickness"
+    type: "slider"
+    min: 1
+    max: 10
+    default: 1
+    description: "Guided filter radius. Higher values increase outline thickness and edge bolding."
 
   - flag: "--eps"
-    name: "AI: Epsilon Smoothing Curve"
-    type: "text"
+    name: "AI: Surface Smoothing Level"
+    type: "choice"
+    choices:
+      - label: "Fine Details / Minimal Smooth (0.001)"
+        value: "1e-3"
+      - label: "Balanced Cartoon Smoothness (0.005)"
+        value: "5e-3"
+      - label: "Soft Painterly Effect (0.010)"
+        value: "1e-2"
+      - label: "Heavy Surface Flattening (0.050)"
+        value: "5e-2"
+      - label: "Maximum Abstract Flat Colors (0.100)"
+        value: "1e-1"
     default: "5e-3"
+    description: "Smoothing intensity. Controls surface flattening versus fine feature retention."
+
+  - flag: "--intensity"
+    name: "Effect Intensity / Shading Strength"
+    type: "slider"
+    min: 1
+    max: 100
+    default: 80
+    description: "Controls stylization strength (1-100). Higher values preserve bright original background colors while sharpening cartoon outlines."

@@ -1,1 +1,11 @@
-boto3
+tensorflow==2.16.2
+tf_slim==1.1.0
+textual>=1.0.0
+textual-slider>=0.2.0
+rich>=13.0.0
+pyyaml>=6.0.0
+opencv-python>=4.8.0
+scikit-video==1.1.11
+moviepy>=2.0.0
+Pillow>=10.0.0
+numpy>=1.26.0

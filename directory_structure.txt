@@ -1,0 +1,180 @@
+.
+├── .env
+├── .gitignore
+├── .gitmodules
+├── README.md
+├── code_snapshots
+│   ├── code
+│   ├── screenshots
+│   └── snapshot.sh
+├── env.example.txt
+├── file_mgmt
+│   ├── png2webp.py
+│   ├── rename.py
+│   ├── s3upload.py
+│   └── webp2png.py
+├── gifs
+│   ├── check_moviepy.py
+│   ├── example-imgs
+│   │   ├── tf1.png
+│   │   ├── tf2.png
+│   │   ├── tf3.png
+│   │   └── tf4.png
+│   ├── input.gif
+│   ├── pyGifr.py
+│   ├── pygif.py
+│   ├── pygif2.py
+│   ├── requirements.txt
+│   └── vid2gif.py
+├── optimize_scripts
+│   ├── optimize_images.py
+│   └── thumbnailer.py
+├── pixel-artify
+│   ├── README.md
+│   ├── ascii_mac.py
+│   ├── examples
+│   │   ├── pixel_bluejay.png
+│   │   └── pixel_bluejay_distressed.png
+│   ├── pixelator.py
+│   ├── zack-profile-2.png
+│   └── zack-profile.png
+├── pyproject.toml
+├── pywocky
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-313.pyc
+│   │   └── app.cpython-313.pyc
+│   ├── app.py
+│   └── tools
+│       ├── cartoonize.yaml
+│       ├── code-snapshot.yaml
+│       ├── gifr.yaml
+│       ├── media-optimize.yaml
+│       ├── optimize_images.yaml
+│       ├── png2webp.yaml
+│       ├── rename.yaml
+│       ├── s3upload.yaml
+│       ├── thumbnails.yaml
+│       ├── tts-blendr.yaml
+│       ├── vid2gif.yaml
+│       ├── video-looper.yaml
+│       └── webp2png.yaml
+├── pywocky.egg-info
+│   ├── PKG-INFO
+│   ├── SOURCES.txt
+│   ├── dependency_links.txt
+│   ├── entry_points.txt
+│   ├── requires.txt
+│   └── top_level.txt
+├── pywocky_preview.png
+├── requirements.txt
+├── submodules
+│   └── tts-blendr
+├── temp
+└── vid_mog
+    ├── FGCineDrama.cube
+    ├── FGCineTealOrange2.cube
+    ├── FGCineWarm.cube
+    ├── _old
+    │   ├── filter.sh
+    │   ├── upscale-cine-amd.sh
+    │   ├── upscaler-amd.sh
+    │   └── vidpro.sh
+    ├── cartoon-cli.sh
+    ├── ffmpeg-artschool_scripts
+    │   ├── README.md
+    │   ├── access.sh
+    │   ├── audioviz.sh
+    │   ├── bitplane.sh
+    │   ├── bitplaneslices.sh
+    │   ├── blend.sh
+    │   ├── chromakey.sh
+    │   ├── colorizer.sh
+    │   ├── corruptor.sh
+    │   ├── echo.sh
+    │   ├── gif.sh
+    │   ├── jetcolor.sh
+    │   ├── lagfun.sh
+    │   ├── life.sh
+    │   ├── lumakey.sh
+    │   ├── procamp.sh
+    │   ├── proreser.sh
+    │   ├── pseudocolor.sh
+    │   ├── rainbow-trail.sh
+    │   ├── repeat.sh
+    │   ├── reverse.sh
+    │   ├── rotate.sh
+    │   ├── tblend.sh
+    │   ├── tblend_glitch.sh
+    │   ├── text.sh
+    │   ├── tile.sh
+    │   ├── trim.sh
+    │   ├── xstack.sh
+    │   └── zoomflipscroller.sh
+    ├── glitch-cli.sh
+    ├── glsl
+    │   ├── Anime4K_ModeA.glsl
+    │   ├── ToonFrag.glsl
+    │   ├── ToonVert.glsl
+    │   ├── cartoon.glsl
+    │   ├── nebula.glsl
+    │   └── shaders
+    │       ├── Godess2x_AutoDownscalePre_x2.glsl
+    │       ├── Godess2x_AutoDownscalePre_x4.glsl
+    │       ├── Godess2x_Clamp_Highlights.glsl
+    │       ├── Godess2x_Darken_Fast.glsl
+    │       ├── Godess2x_Darken_HQ.glsl
+    │       ├── Godess2x_Darken_VeryFast.glsl
+    │       ├── Godess2x_Deblur_DoG.glsl
+    │       ├── Godess2x_Deblur_Original.glsl
+    │       ├── Godess2x_Denoise_Bilateral_Mean.glsl
+    │       ├── Godess2x_Denoise_Bilateral_Median.glsl
+    │       ├── Godess2x_Denoise_Bilateral_Mode.glsl
+    │       ├── Godess2x_Restore_CNN_L.glsl
+    │       ├── Godess2x_Restore_CNN_M.glsl
+    │       ├── Godess2x_Restore_CNN_S.glsl
+    │       ├── Godess2x_Restore_CNN_Soft_L.glsl
+    │       ├── Godess2x_Restore_CNN_Soft_M.glsl
+    │       ├── Godess2x_Restore_CNN_Soft_S.glsl
+    │       ├── Godess2x_Restore_CNN_Soft_UL.glsl
+    │       ├── Godess2x_Restore_CNN_Soft_VL.glsl
+    │       ├── Godess2x_Restore_CNN_UL.glsl
+    │       ├── Godess2x_Restore_CNN_VL.glsl
+    │       ├── Godess2x_Thin_Fast.glsl
+    │       ├── Godess2x_Thin_HQ.glsl
+    │       ├── Godess2x_Thin_VeryFast.glsl
+    │       ├── Godess2x_Upscale_CNN_x2_L.glsl
+    │       ├── Godess2x_Upscale_CNN_x2_M.glsl
+    │       ├── Godess2x_Upscale_CNN_x2_S.glsl
+    │       ├── Godess2x_Upscale_CNN_x2_UL.glsl
+    │       ├── Godess2x_Upscale_CNN_x2_VL.glsl
+    │       ├── Godess2x_Upscale_DTD_x2.glsl
+    │       ├── Godess2x_Upscale_Deblur_DoG_x2.glsl
+    │       ├── Godess2x_Upscale_Deblur_Original_x2.glsl
+    │       ├── Godess2x_Upscale_Denoise_CNN_x2_L.glsl
+    │       ├── Godess2x_Upscale_Denoise_CNN_x2_M.glsl
+    │       ├── Godess2x_Upscale_Denoise_CNN_x2_S.glsl
+    │       ├── Godess2x_Upscale_Denoise_CNN_x2_UL.glsl
+    │       ├── Godess2x_Upscale_Denoise_CNN_x2_VL.glsl
+    │       ├── Godess2x_Upscale_DoG_x2.glsl
+    │       └── Godess2x_Upscale_Original_x2.glsl
+    ├── huement-watermark.png
+    ├── loop-cli.sh
+    ├── media-optimize.sh
+    ├── media_optimize.py
+    ├── output.png
+    ├── pyviddy
+    │   ├── cartoonize.py
+    │   ├── config.yaml
+    │   ├── guided_filter.py
+    │   ├── looper.py
+    │   ├── network.py
+    │   ├── requirements.txt
+    │   ├── saved_models
+    │   │   ├── checkpoint
+    │   │   ├── model-33999.data-00000-of-00001
+    │   │   └── model-33999.index
+    │   └── test.jpg
+    └── temp
+
+24 directories, 154 files

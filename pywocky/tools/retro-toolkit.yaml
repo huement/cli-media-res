@@ -1,0 +1,89 @@
+id: "retro_toolkit"
+name: "Retro & Visual FX Engine"
+script_path: "vid_mog/retro_toolkit.py"
+description: "Applies visual effects, motion interpolation, LUT color grading, film grain, CRT scanlines, and RGB shift."
+
+arguments:
+  # Core Inputs & Outputs
+  - flag: "--input"
+    name: "Input File or Directory (-i)"
+    type: "file"
+    required: true
+    placeholder: "Select MP4 video file or folder..."
+    description: "Input folder containing mp4 files or a path to a single mp4 file."
+
+  - flag: "--output"
+    name: "Output Folder (-o)"
+    type: "file"
+    placeholder: "Defaults to input directory"
+    description: "Output folder for processed files."
+
+  - flag: "--bitrate"
+    name: "Video Bitrate (-b)"
+    type: "text"
+    default: "2000k"
+    description: "Video encoding target bitrate."
+
+  # Color Grading & LUTs
+  - flag: "--lut"
+    name: "3D Color LUT (.cube) (-l)"
+    type: "choice"
+    choices: "./vid_mog/LUTs/*.<CUBE,cube>"
+    description: "Applies color grading curve from available LUT files."
+
+  # Configurable Retro FX Inputs (0 to 100)
+  - flag: "--crt"
+    name: "FX: CRT Scanline Overlay (0-100)"
+    type: "integer"
+    default: 0
+    description: "CRT scanline intensity (0 = Off, 100 = Strong)."
+
+  - flag: "--grain"
+    name: "FX: Film Grain Intensity (0-100)"
+    type: "integer"
+    default: 0
+    description: "Cinematic film grain intensity (0 = Off, 100 = Heavy)."
+
+  - flag: "--vignette"
+    name: "FX: Lens Vignette Darkening (0-100)"
+    type: "integer"
+    default: 0
+    description: "Vignette corner darkening intensity (0 = Off, 100 = Heavy)."
+
+  - flag: "--rgb-shift"
+    name: "FX: RGB Chromatic Aberration (0-100)"
+    type: "integer"
+    default: 0
+    description: "Color channel offset glitch intensity (0 = Off, 100 = Heavy)."
+
+  # Stylistic Presets
+  - flag: "--bloom"
+    name: "Preset: Soft Bloom Glow"
+    type: "boolean"
+    default: false
+    description: "Applies a soft bloom glow pass."
+
+  - flag: "--twinkle"
+    name: "Preset: Starfield Twinkle"
+    type: "boolean"
+    default: false
+    description: "Adds a dynamic luminance pulse."
+
+  - flag: "--crush"
+    name: "Preset: Deep Shadow Crush"
+    type: "boolean"
+    default: false
+    description: "Crushes dark shadows for higher contrast."
+
+  # Motion FX
+  - flag: "--slowsmooth"
+    name: "Motion: Ultra-Smooth Slow-Mo (60fps)"
+    type: "boolean"
+    default: false
+    description: "Optical flow motion interpolation (50% speed, 60fps)."
+
+  - flag: "--ghosting"
+    name: "Motion: Dreamy Frame Blending"
+    type: "boolean"
+    default: false
+    description: "Dreamy frame-blending motion trail effect (50% speed, 60fps)."

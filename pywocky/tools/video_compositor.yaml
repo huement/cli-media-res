@@ -1,0 +1,62 @@
+id: "video_compositor"
+name: "Video Layer Compositor"
+script_path: "vid_mog/video_compositor.py"
+description: "Layers two video clips together using Multiply, Screen, or Overlay blending modes with adjustable top-layer opacity."
+
+arguments:
+  - flag: "--base"
+    name: "Base Layer Video (Color Clip)"
+    type: "file"
+    required: true
+    description: "Bottom video file path (e.g. the cool color pass)."
+
+  - flag: "--top"
+    name: "Top Layer Video (Outline Clip)"
+    type: "file"
+    required: true
+    description: "Top video file path (e.g. the black lineart pass)."
+
+  - flag: "--output"
+    name: "Output Video Destination"
+    type: "text"
+    placeholder: "Omit to auto-generate filename"
+    description: "Destination video file path."
+
+  - flag: "--mode"
+    name: "Layer Blend Mode"
+    type: "choice"
+    choices:
+      - label: "Multiply (Darken / Lineart Bolding)"
+        value: "multiply"
+      - label: "Screen (Lighten / Glow Passes)"
+        value: "screen"
+      - label: "Overlay (High Contrast Blend)"
+        value: "overlay"
+      - label: "Soft Light (Subtle Shading)"
+        value: "softlight"
+      - label: "Hard Light (Vivid Shading)"
+        value: "hardlight"
+      - label: "Addition (Glow / Lighting Addition)"
+        value: "addition"
+      - label: "Darken"
+        value: "darken"
+      - label: "Lighten"
+        value: "lighten"
+      - label: "Difference"
+        value: "difference"
+    default: "multiply"
+    description: "Select blend engine mode."
+
+  - flag: "--opacity"
+    name: "Top Layer Opacity (%)"
+    type: "slider"
+    min: 1
+    max: 100
+    default: 20
+    description: "Opacity of the top layer (1-100%). Set to 20 for 20% opacity."
+
+  - flag: "--gpu"
+    name: "Hardware Acceleration"
+    type: "boolean"
+    default: false
+    description: "Enable Apple VideoToolbox GPU encoding."

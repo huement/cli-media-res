@@ -1,7 +1,7 @@
 id: "media_optimize"
-name: "Video Optimizer & FX Engine"
-script_path: "vid_mog/media-optimize.py"
-description: "Ultimate Video Toolkit: Combines smart optimization, motion interpolation, and creative FX filters."
+name: "Video Optimizer"
+script_path: "vid_mog/media_optimize.py"
+description: "Media Optimizer: Handles smart upscaling, downscaling, bitrate target adjustments, and watermarking."
 
 arguments:
   # Core Inputs & Outputs
@@ -34,17 +34,12 @@ arguments:
 
   - flag: "--downscale"
     name: "Downscale Height (-ds)"
-    type: "text"
-    placeholder: "e.g., 720p, 480"
+    type: "choice"
+    choices: ["none", "720p", "1080p", "1440p", "4k"]
+    default: "none"
     description: "Downscale video to target height proportion (e.g., 720p, 480) using hardware acceleration."
 
-  # Color & Watermarks
-  - flag: "--lut"
-    name: "3D Color LUT (.cube) (-l)"
-    type: "file"
-    placeholder: "Path to .cube LUT file..."
-    description: "Applies color grading curve (activates 10-bit GPU color pipeline if not downscaling)."
-
+  # Watermarks
   - flag: "--watermark"
     name: "Watermark Overlay Image (-wm)"
     type: "file"
@@ -54,47 +49,3 @@ arguments:
     name: "Watermark Width (px) (-ww)"
     type: "integer"
     default: "120"
-
-  # Motion Interpolation
-  - flag: "--slowsmooth"
-    name: "Ultra-Smooth Motion Slow-Mo (60fps)"
-    type: "boolean"
-    default: false
-    description: "Optical flow motion interpolation (50% speed, 60fps)."
-
-  - flag: "--ghosting"
-    name: "Dreamy Frame Blending Slow-Mo"
-    type: "boolean"
-    default: false
-    description: "Dreamy frame-blending motion trail effect (50% speed, 60fps)."
-
-  # Creative FX Filters
-  - flag: "--bloom"
-    name: "FX: Bloom & Soft Glow"
-    type: "boolean"
-    default: false
-
-  - flag: "--twinkle"
-    name: "FX: Starfield Twinkle"
-    type: "boolean"
-    default: false
-
-  - flag: "--aberration"
-    name: "FX: Chromatic Aberration"
-    type: "boolean"
-    default: false
-
-  - flag: "--crush"
-    name: "FX: Deep Black Shadow Crush"
-    type: "boolean"
-    default: false
-
-  - flag: "--glitch"
-    name: "FX: Anaglyphic RGB Shift Glitch"
-    type: "boolean"
-    default: false
-
-  - flag: "--grain"
-    name: "FX: Cinematic Film Grain"
-    type: "boolean"
-    default: false

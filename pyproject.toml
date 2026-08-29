@@ -12,11 +12,11 @@ requires-python = ">=3.9"
 # Core dependencies strictly required for the TUI engine
 dependencies = [
     "textual>=1.0.0",
+    "textual-slider>=0.2.0",
     "rich>=13.0.0",
     "pyyaml>=6.0.0",
 ]
 
-# Optional dependency groups for underlying tools
 [project.optional-dependencies]
 media = [
     "moviepy>=2.0.0",

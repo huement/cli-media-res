@@ -1,0 +1,77 @@
+id: "pixel_art"
+name: "Pixel Art Converter"
+script_path: "pixel-artify/pixelator.py"
+description: "Turn raster PNGs or SVG vectors into pixel art with optional color palettes, distressed edge effects, tinting, and terminal previews."
+
+arguments:
+  # Core Inputs & Outputs
+  - flag: "input_image"
+    name: "Input Image File"
+    type: "file"
+    required: true
+    placeholder: "Select PNG, JPG, or SVG image..."
+    description: "Path to input file (PNG, JPG, SVG, etc.)."
+
+  - flag: "--output"
+    name: "Output File Path (-o)"
+    type: "file"
+    placeholder: "Defaults to output directory naming"
+    description: "Full output file path."
+
+  - flag: "--input-dir"
+    name: "Input Directory"
+    type: "file"
+    default: "input_images"
+    description: "Default directory to look for input images if path isn't specified."
+
+  - flag: "--output-dir"
+    name: "Output Directory"
+    type: "file"
+    default: "output_images"
+    description: "Default directory where output images will be saved."
+
+  # Pixelation Controls
+  - flag: "--pixel-size"
+    name: "Pixel Block Size (-p)"
+    type: "integer"
+    default: "8"
+    description: "Block size in pixels (higher = more pixelated)."
+
+  - flag: "--colors"
+    name: "Max Palette Colors (-c)"
+    type: "integer"
+    placeholder: "e.g., 16"
+    description: "Max color count for palette quantization."
+
+  - flag: "--distress-edges"
+    name: "Distress Edge Intensity (-d)"
+    type: "integer"
+    default: "0"
+    placeholder: "0 to 100"
+    description: "Chipping chance percentage (1-100) along edges."
+
+  - flag: "--decay-rate"
+    name: "Distress Decay Rate"
+    type: "text"
+    default: "0.65"
+    description: "Distress probability decay rate from edge (0.0 - 1.0)."
+
+  # Colorization
+  - flag: "--tint"
+    name: "Color Tint Filter"
+    type: "text"
+    placeholder: "e.g., red, #FF0000, crimson"
+    description: "Remaps black/gray pixels to shades of target color/hex."
+
+  # CLI Terminal Preview
+  - flag: "--terminal"
+    name: "Terminal Preview (-t)"
+    type: "boolean"
+    default: false
+    description: "Print the generated pixel art directly in the terminal."
+
+  - flag: "--tw"
+    name: "Terminal Preview Width"
+    type: "integer"
+    default: "60"
+    description: "Terminal preview display width in characters."

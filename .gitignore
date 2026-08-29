@@ -8,5 +8,9 @@ generativeSVGs/node_modules/
 **/*.mp4
 **/*.mov
 .venv
+venv
 code_snapshots/screenshots/*.png
 
+**/__pycache__/*
+**/__pycache__/**/*
+pywocky/__pycache__/*

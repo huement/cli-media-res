@@ -5,5 +5,7 @@ optimize_scripts
 pixel-artify
 pywocky
 submodules
+swatches
 temp
+venv
 vid_mog

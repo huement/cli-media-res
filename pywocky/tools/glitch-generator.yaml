@@ -1,0 +1,31 @@
+id: "glitch_generator"
+name: "Video Databend & Glitch Generator"
+script_path: "vid_mog/glitch_generator.py"
+description: "Translates video pipeline corruption algorithms into automated glitch effects (aberration, vectors, stack, echo, databend, morph)."
+
+arguments:
+  - flag: "--input"
+    name: "Input File or Directory (-i)"
+    type: "file"
+    required: true
+    placeholder: "Select MP4/MOV video or PNG/JPG image..."
+    description: "Source file or directory to apply glitch effects to."
+
+  - flag: "--output"
+    name: "Output Folder (-o)"
+    type: "file"
+    placeholder: "Defaults to input file location"
+    description: "Destination directory for rendered glitch outputs."
+
+  - flag: "--mode"
+    name: "Glitch Processing Engine (-m)"
+    type: "choice"
+    choices: ["aberration", "vectors", "stack", "echo", "databend", "morph"]
+    default: "aberration"
+    description: "Glitch algorithm: Chromatic Aberration, Motion Vectors, Temporal Stack, Echo, Databend, or Morph Slurring."
+
+  - flag: "--gpu"
+    name: "Hardware Acceleration (--gpu)"
+    type: "boolean"
+    default: false
+    description: "Enable Apple VideoToolbox GPU encoding."

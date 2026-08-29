@@ -20,6 +20,24 @@ def get_video_duration(input_file):
         print(f"❌ Core Error: Failed to extract video properties via ffprobe: {e}", file=sys.stderr)
         sys.exit(1)
 
+def resolve_output_path(input_path, output_arg, mode):
+    """Constructs a full output filepath if given a directory path."""
+    # Check if target is an existing directory or ends with a path separator
+    if os.path.isdir(output_arg) or output_arg.endswith(('/', '\\')):
+        os.makedirs(output_arg, exist_ok=True)
+        input_filename = os.path.basename(input_path)
+        stem, ext = os.path.splitext(input_filename)
+        ext = ext if ext else ".mp4"
+        generated_name = f"{stem}_{mode}{ext}"
+        return os.path.join(output_arg, generated_name)
+    
+    # Ensure any parent directory structure exists if a full path was provided
+    parent_dir = os.path.dirname(output_arg)
+    if parent_dir:
+        os.makedirs(parent_dir, exist_ok=True)
+        
+    return output_arg
+
 def main():
     parser = argparse.ArgumentParser(description="Cyberpunk Video Looper Engine Backend")
     parser.add_argument('--input', required=True)
@@ -33,6 +51,8 @@ def main():
     if not os.path.exists(args.input):
         print(f"❌ Error: Input file path does not exist: {args.input}", file=sys.stderr)
         sys.exit(1)
+
+    output_path = resolve_output_path(args.input, args.output, args.mode)
 
     total_duration = get_video_duration(args.input)
     fade_len = args.fade
@@ -82,7 +102,7 @@ def main():
             '-realtime', '1'       # Tells VideoToolbox to prioritize execution speed
         ]
 
-    ffmpeg_cmd.append(args.output)
+    ffmpeg_cmd.append(output_path)
 
     print(f"🧬 Blending video pixels via complex filter graph engine...")
     try:
