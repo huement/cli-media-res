@@ -185,19 +185,25 @@ The pywocky command has a number of tools and actions that it can use. While you
 > python3 ./vid_mog/media_optimize.py [params]
 ```
 
-| **Category**             | **Tool**                   | **Description**                                             |
-| ------------------------ | -------------------------- | ----------------------------------------------------------- |
-| **🎙️ Audio & Speech**    | **TTS Blendr**             | Voice synthesis & dual-voice blending TUI _(Interactive)_   |
-| **🖼️ Image Processing**  | **Web & Image Optimizer**  | Max compression in-place + auto WebP creation               |
-|                          | **Smart Thumbnailer**      | Distortion-free smart cropping & video frame capture        |
-|                          | **PNG to WebP**            | Fast batch PNG to WebP conversion                           |
-|                          | **WebP to PNG**            | WebP to 1:1 PNG + 150% Lanczos upscaling                    |
-|                          | **S3 Sync & Upload**       | S3/MinIO bucket folder sync with on-the-fly WebP conversion |
-| **🎬 Video & Animation** | **Video Optimizer & FX**   | Hardware-accelerated HEVC/H.264, 10-bit LUTs, & FX          |
-|                          | **CyberGif (pyGifr)**      | Auto-bounding box folder GIF & MP4 compiler                 |
-|                          | **Video to GIF**           | High-compression video-to-GIF converter                     |
-| **🛠️ Utilities & Code**  | **Batch Filename Cleaner** | Strip unwanted substrings from folder filenames             |
-|                          | **Code Snapshots**         | Code screenshot generator                                   |
+| **Category**             | **Tool**                              | **Description**                                                                       |
+| ------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------- |
+| **🎙️ Audio & Speech**    | **TTS Blendr**                        | Voice synthesis & dual-voice blending TUI _(Interactive)_                             |
+| **🖼️ Image Processing**  | **Web & Image Optimizer**             | Max compression in-place + auto WebP creation                                         |
+|                          | **Smart Thumbnailer**                 | Distortion-free smart cropping & video frame capture                                  |
+|                          | **PNG to WebP**                       | Fast batch PNG to WebP conversion                                                     |
+|                          | **WebP to PNG**                       | WebP to 1:1 PNG + 150% Lanczos upscaling                                              |
+|                          | **Pixel Art Converter**               | Converts images/vectors into pixel art with color palettes, tinting, & distressed FX  |
+|                          | **S3 Sync & Upload**                  | S3/MinIO bucket folder sync with on-the-fly WebP conversion                           |
+| **🎬 Video & Animation** | **Video Optimizer & FX**              | Hardware-accelerated HEVC/H.264, 10-bit LUTs, & FX                                    |
+|                          | **Retro & Visual FX Engine**          | Applies CRT scanlines, film grain, bloom glow, & 3D LUT grading                       |
+|                          | **AI Cartoonizer & Media Suite**      | Multi-engine video cartoonization (Neural AI, FFmpeg recipes, frei0r, & GLSL Shaders) |
+|                          | **Video Databend & Glitch Generator** | Artistic video glitching, chromatic aberration, motion vectors, & temporal stack FX   |
+|                          | **Video Layer Compositor**            | Layer video clips with Multiply/Screen/Overlay blend modes & opacity controls         |
+|                          | **Video Looper Utility**              | Generates seamless repeat blocks or reverse boomerang cross-fade sequences            |
+|                          | **CyberGif (pyGifr)**                 | Auto-bounding box folder GIF & MP4 compiler                                           |
+|                          | **Video to GIF**                      | High-compression video-to-GIF converter                                               |
+| **🛠️ Utilities & Code**  | **Batch Filename Cleaner**            | Strip unwanted substrings from folder filenames                                       |
+|                          | **Code Snapshot Generator**           | Code screenshot generator using Silicon & ImageMagick                                 |
 
 ## 📄 License & Sponsorship
 
